@@ -17,13 +17,20 @@ const base = {
   JWT_SECRET: 'secret',
 } satisfies NodeJS.ProcessEnv;
 
+/** The same configuration expressed with the new-format key names. */
+const newFormat = {
+  SUPABASE_URL: 'https://test.supabase.co',
+  SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
+  SUPABASE_SECRET_KEY: 'sb_secret_test',
+} satisfies NodeJS.ProcessEnv;
+
 describe('required configuration', () => {
   it('accepts a complete development configuration', () => {
     const result = parseEnv({ ...base, NODE_ENV: 'development' });
     expect(result.success).toBe(true);
   });
 
-  it.each(['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY', 'JWT_SECRET'])(
+  it.each(['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY'])(
     'rejects a configuration missing %s',
     (key) => {
       const incomplete: NodeJS.ProcessEnv = { ...base };
@@ -31,6 +38,14 @@ describe('required configuration', () => {
       expect(parseEnv(incomplete).success).toBe(false);
     },
   );
+
+  it('does NOT require JWT_SECRET by default', () => {
+    // An asymmetric project has no shared secret to configure. Requiring one
+    // unconditionally would make a JWKS project impossible to boot.
+    const noSecret: NodeJS.ProcessEnv = { ...base };
+    delete noSecret.JWT_SECRET;
+    expect(parseEnv(noSecret).success).toBe(true);
+  });
 
   it('rejects a malformed SUPABASE_URL', () => {
     expect(parseEnv({ ...base, SUPABASE_URL: 'not-a-url' }).success).toBe(false);
@@ -135,5 +150,107 @@ describe('secret hygiene', () => {
       expect(serialised).not.toContain('super-secret-value-abc123');
       expect(serialised).not.toContain('sk-should-never-be-logged');
     }
+  });
+});
+
+
+describe('API key migration — both generations accepted', () => {
+  it('accepts the legacy pair (anon + service_role)', () => {
+    expect(parseEnv(base).success).toBe(true);
+  });
+
+  it('accepts the new pair (publishable + secret)', () => {
+    expect(parseEnv(newFormat).success).toBe(true);
+  });
+
+  it('accepts a half-migrated configuration', () => {
+    // New publishable key, legacy secret key — what a real migration looks
+    // like partway through.
+    const mixed = {
+      SUPABASE_URL: 'https://test.supabase.co',
+      SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
+      SUPABASE_SERVICE_ROLE_KEY: 'service',
+    };
+    expect(parseEnv(mixed).success).toBe(true);
+  });
+
+  it('rejects a configuration with NEITHER publishable nor anon key', () => {
+    const missing: NodeJS.ProcessEnv = { ...base };
+    delete missing.SUPABASE_ANON_KEY;
+    const result = parseEnv(missing);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const paths = result.error.issues.flatMap((i) => i.path);
+      expect(paths).toContain('SUPABASE_PUBLISHABLE_KEY');
+    }
+  });
+
+  it('rejects a configuration with NEITHER secret nor service_role key', () => {
+    const missing: NodeJS.ProcessEnv = { ...base };
+    delete missing.SUPABASE_SERVICE_ROLE_KEY;
+    const result = parseEnv(missing);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const paths = result.error.issues.flatMap((i) => i.path);
+      expect(paths).toContain('SUPABASE_SECRET_KEY');
+    }
+  });
+
+  it('names both acceptable variables in the error message', () => {
+    // One clear message beats two confusing "required" errors for keys that
+    // are alternatives to each other.
+    const missing: NodeJS.ProcessEnv = { ...base };
+    delete missing.SUPABASE_ANON_KEY;
+    const result = parseEnv(missing);
+    if (!result.success) {
+      const message = result.error.issues.map((i) => i.message).join(' ');
+      expect(message).toContain('SUPABASE_PUBLISHABLE_KEY');
+      expect(message).toContain('SUPABASE_ANON_KEY');
+    }
+  });
+
+  it('warns in the message that the secret key bypasses RLS', () => {
+    const missing: NodeJS.ProcessEnv = { ...base };
+    delete missing.SUPABASE_SERVICE_ROLE_KEY;
+    const result = parseEnv(missing);
+    if (!result.success) {
+      const message = result.error.issues.map((i) => i.message).join(' ');
+      expect(message).toContain('BYPASSES');
+    }
+  });
+});
+
+describe('JWT verification mode', () => {
+  it('defaults to auto', () => {
+    const result = parseEnv(base);
+    if (result.success) expect(result.data.SUPABASE_JWT_MODE).toBe('auto');
+  });
+
+  it.each(['auto', 'hs256', 'jwks'])('accepts mode %s', (mode) => {
+    expect(parseEnv({ ...base, SUPABASE_JWT_MODE: mode }).success).toBe(true);
+  });
+
+  it('rejects an unknown mode', () => {
+    expect(parseEnv({ ...base, SUPABASE_JWT_MODE: 'hs512' }).success).toBe(false);
+  });
+
+  it('REQUIRES JWT_SECRET when the mode is explicitly hs256', () => {
+    const noSecret: NodeJS.ProcessEnv = { ...base, SUPABASE_JWT_MODE: 'hs256' };
+    delete noSecret.JWT_SECRET;
+    const result = parseEnv(noSecret);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.flatMap((i) => i.path)).toContain('JWT_SECRET');
+    }
+  });
+
+  it('does not require JWT_SECRET in jwks mode', () => {
+    const jwksOnly: NodeJS.ProcessEnv = { ...newFormat, SUPABASE_JWT_MODE: 'jwks' };
+    expect(parseEnv(jwksOnly).success).toBe(true);
+  });
+
+  it('defaults the audience to "authenticated"', () => {
+    const result = parseEnv(base);
+    if (result.success) expect(result.data.SUPABASE_JWT_AUDIENCE).toBe('authenticated');
   });
 });

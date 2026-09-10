@@ -257,6 +257,43 @@ It is replaceable without structural change: every affected policy is a SELECT
 policy, and `profiles.state` / `profiles.department` already exist to carry the
 boundary. DATABASE.md §9 records the full rationale and blast radius.
 
+### Supabase configuration (verified 2026-09-11)
+
+Determined against the live project by `npm run audit:supabase`, not assumed:
+
+| Property | Value |
+|---|---|
+| API key generation | **new format** (`sb_publishable_…` / `sb_secret_…`) |
+| JWT signing | **ES256, asymmetric, via JWKS** |
+| JWKS endpoint | `<SUPABASE_URL>/auth/v1/.well-known/jwks.json` |
+| Issuer | `<SUPABASE_URL>/auth/v1` |
+| `SUPABASE_JWT_MODE` | pinned to `jwks` |
+
+Both key generations are accepted (`SUPABASE_PUBLISHABLE_KEY` falling back to
+`SUPABASE_ANON_KEY`, `SUPABASE_SECRET_KEY` to `SUPABASE_SERVICE_ROLE_KEY`), so
+a project can migrate without a coordinated deploy. The key **format** and the
+**variable name** are independent — this project holds new-format keys under
+the legacy variable names, which works and is reported accurately by the audit.
+
+Migrating key formats changes nothing about trust: publishable/anon still
+respects RLS, secret/service-role still bypasses it.
+
+#### Why the mode is pinned rather than auto-detected
+
+`auto` probes the JWKS endpoint and, historically, treated any failure as "no
+JWKS" and fell back to HS256. That is a downgrade attack waiting to happen: a
+transient outage would move verification onto `JWT_SECRET`, and a weak or
+placeholder secret is then forgeable.
+
+The verifier now distinguishes three outcomes — keys published, definitively
+absent (200-with-no-keys, or 404), and **indeterminate** — and fails closed on
+the third rather than downgrading. Pinning `SUPABASE_JWT_MODE=jwks` removes the
+question entirely.
+
+Algorithms are pinned per mode (`HS256` alone, or `ES256`/`RS256` alone) and
+the two modes never share key material, which forecloses algorithm confusion:
+a JWKS public key is never a candidate HMAC secret.
+
 ### Credential boundaries
 
 | Secret | Frontend | Backend | ML service |

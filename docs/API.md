@@ -27,8 +27,13 @@ The role is **never** read from the token. `user_metadata` is writable by the
 user, so a correctly-signed token can carry any role its holder chose. See
 `docs/ARCHITECTURE.md` §4.
 
-Tokens must be signed **HS256**, carry `aud: "authenticated"`, be unexpired,
-and have a UUID `sub`.
+Tokens are verified against the project's actual signing scheme — **ES256 via
+JWKS** for this project, verified live on 2026-09-11. Legacy HS256 projects are
+also supported. In both cases the algorithm is pinned, and `iss`, `aud`, `exp`
+and a UUID `sub` are all asserted.
+
+A `503` (rather than `401`) means the backend could not determine how to verify
+tokens — a configuration or JWKS-availability fault, not a bad credential.
 
 ### Provisioning
 

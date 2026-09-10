@@ -23,11 +23,13 @@ const { requireAuth } = await import('../src/middleware/auth.middleware');
 
 const SECRET = 'test-jwt-secret-not-a-real-key';
 const USER_ID = '11111111-1111-4111-8111-111111111111';
+/** Matches the default derived from SUPABASE_URL in tests/setup.ts. */
+const ISSUER = 'https://test-project.supabase.co/auth/v1';
 
 /** Mint a valid, correctly-signed token — the same thing Supabase would issue. */
 function signToken(payload: Record<string, unknown> = {}, options: jwt.SignOptions = {}): string {
   return jwt.sign(
-    { sub: USER_ID, aud: 'authenticated', email: 'officer@example.invalid', ...payload },
+    { sub: USER_ID, aud: 'authenticated', iss: ISSUER, email: 'officer@example.invalid', ...payload },
     SECRET,
     { algorithm: 'HS256', expiresIn: '1h', ...options },
   );
@@ -188,7 +190,7 @@ describe('JWT algorithm pinning', () => {
     // The classic attack: the token asserts it needs no signature. Without an
     // explicit algorithm list, the verifier would honour that assertion.
     seedProfile('VIEWER');
-    const unsigned = jwt.sign({ sub: USER_ID, aud: 'authenticated' }, '', {
+    const unsigned = jwt.sign({ sub: USER_ID, aud: 'authenticated', iss: ISSUER }, '', {
       algorithm: 'none',
     });
 
@@ -205,7 +207,7 @@ describe('JWT algorithm pinning', () => {
   it('rejects a token signed with a different HMAC algorithm (HS512)', async () => {
     // Same secret, disallowed algorithm — must still be refused.
     seedProfile('VIEWER');
-    const hs512 = jwt.sign({ sub: USER_ID, aud: 'authenticated' }, SECRET, {
+    const hs512 = jwt.sign({ sub: USER_ID, aud: 'authenticated', iss: ISSUER }, SECRET, {
       algorithm: 'HS512',
       expiresIn: '1h',
     });
@@ -254,7 +256,7 @@ describe('token validation', () => {
 
   it('rejects a token signed with the wrong secret', async () => {
     seedProfile('ADMIN');
-    const forged = jwt.sign({ sub: USER_ID, aud: 'authenticated' }, 'attacker-secret', {
+    const forged = jwt.sign({ sub: USER_ID, aud: 'authenticated', iss: ISSUER }, 'attacker-secret', {
       algorithm: 'HS256',
       expiresIn: '1h',
     });
@@ -296,7 +298,7 @@ describe('token validation', () => {
 
   it('rejects a token minted for a different audience', async () => {
     seedProfile('ADMIN');
-    const wrongAudience = jwt.sign({ sub: USER_ID, aud: 'service' }, SECRET, {
+    const wrongAudience = jwt.sign({ sub: USER_ID, aud: 'service', iss: ISSUER }, SECRET, {
       algorithm: 'HS256',
       expiresIn: '1h',
     });
@@ -313,7 +315,7 @@ describe('token validation', () => {
 
   it('rejects a token whose sub is not a UUID', async () => {
     supabaseMock.setTable('profiles', [{ id: 'admin', role: 'ADMIN', full_name: 'x' }]);
-    const badSub = jwt.sign({ sub: 'admin', aud: 'authenticated' }, SECRET, {
+    const badSub = jwt.sign({ sub: 'admin', aud: 'authenticated', iss: ISSUER }, SECRET, {
       algorithm: 'HS256',
       expiresIn: '1h',
     });
@@ -329,7 +331,7 @@ describe('token validation', () => {
   });
 
   it('rejects a token with no sub claim', async () => {
-    const noSub = jwt.sign({ aud: 'authenticated' }, SECRET, {
+    const noSub = jwt.sign({ aud: 'authenticated', iss: ISSUER }, SECRET, {
       algorithm: 'HS256',
       expiresIn: '1h',
     });
@@ -407,7 +409,7 @@ describe('the populated request', () => {
 
   it('tolerates a token with no email claim', async () => {
     seedProfile('ADMIN');
-    const noEmail = jwt.sign({ sub: USER_ID, aud: 'authenticated' }, SECRET, {
+    const noEmail = jwt.sign({ sub: USER_ID, aud: 'authenticated', iss: ISSUER }, SECRET, {
       algorithm: 'HS256',
       expiresIn: '1h',
     });

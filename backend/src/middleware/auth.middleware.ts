@@ -1,7 +1,6 @@
 import { Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { env } from '../config/env';
 import { getProfileForUser } from '../services/profile.service';
+import { JwtConfigurationError, verifySupabaseToken } from '../services/jwt-verifier';
 import { AuthenticatedRequest } from '../types';
 
 /**
@@ -18,7 +17,7 @@ import { AuthenticatedRequest } from '../types';
  * ---------------------------------------------------------------------------
  * THE VULNERABILITY THIS REPLACES
  * ---------------------------------------------------------------------------
- * The previous implementation read the caller's role straight off the token:
+ * An earlier implementation read the caller's role straight off the token:
  *
  *     role: (decoded.user_metadata?.role as string) ?? 'viewer'
  *
@@ -33,32 +32,15 @@ import { AuthenticatedRequest } from '../types';
  * mandates: resolve the role from `profiles`, where RLS forbids self-service
  * changes.
  *
- * Nothing was exploitable at the time of the fix, because no route had the
- * middleware attached yet. Phase 3 attaches it to every business route.
+ * ---------------------------------------------------------------------------
+ * SIGNATURE VERIFICATION
+ * ---------------------------------------------------------------------------
+ * Delegated to services/jwt-verifier.ts, which supports both schemes a
+ * Supabase project may use — HS256 with a shared secret, or ES256/RS256
+ * against the project's JWKS — with algorithms pinned per mode and issuer,
+ * audience and expiry all asserted. See that file for why the two modes never
+ * share key material.
  */
-
-/**
- * Signing algorithms this backend will accept.
- *
- * Pinning is mandatory, not defensive style. Without an explicit list,
- * `jwt.verify` accepts any algorithm the token's own header names — so an
- * attacker can choose it. The two classic attacks are `alg: "none"`, which
- * asserts the token needs no signature at all, and swapping an RS256 token for
- * an HS256 one signed with the public key as the HMAC secret.
- *
- * Supabase's legacy JWT scheme signs with the project's shared secret using
- * HS256, which is what `JWT_SECRET` holds. Projects migrated to asymmetric
- * signing keys (ES256/RS256 via JWKS) need a different verification path — see
- * the note in the Phase 2.2 report.
- */
-const ALLOWED_JWT_ALGORITHMS: jwt.Algorithm[] = ['HS256'];
-
-/**
- * Supabase sets `aud` to "authenticated" for a signed-in user. Checking it
- * rejects tokens minted for a different audience that happen to share the
- * signing secret (for example service tokens).
- */
-const EXPECTED_AUDIENCE = 'authenticated';
 
 /** Matches any RFC 4122 UUID, which is the shape Supabase Auth issues for `sub`. */
 const UUID_PATTERN =
@@ -100,22 +82,22 @@ export async function requireAuth(
   }
   const token = parts[1];
 
-  let decoded: jwt.JwtPayload;
+  let decoded;
   try {
-    const verified = jwt.verify(token, env.JWT_SECRET, {
-      algorithms: ALLOWED_JWT_ALGORITHMS,
-      audience: EXPECTED_AUDIENCE,
-    });
-
-    // A token whose payload is a bare string carries no claims we can use.
-    if (typeof verified === 'string') {
-      unauthorized(res, 'Invalid or expired token');
+    const verified = await verifySupabaseToken(token);
+    decoded = verified.payload;
+  } catch (err) {
+    // A misconfigured verifier is an operator problem, not a bad credential.
+    // Reporting it as 401 would send the caller off to re-authenticate against
+    // a backend that cannot verify anything.
+    if (err instanceof JwtConfigurationError) {
+      console.error('[auth] JWT verification is misconfigured', { detail: err.message });
+      res.status(503).json({ success: false, error: 'Authentication is not configured' });
       return;
     }
-    decoded = verified;
-  } catch {
-    // Covers an invalid signature, an expired token, a disallowed algorithm
-    // and an audience mismatch alike — all are "this token is not acceptable".
+
+    // Everything else — invalid signature, expired token, disallowed
+    // algorithm, wrong issuer or audience — is one outcome: not acceptable.
     unauthorized(res, 'Invalid or expired token');
     return;
   }

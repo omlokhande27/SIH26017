@@ -15,5 +15,5 @@
     "moduleResolution": "bundler",
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src/**/*", "tests/**/*", "vitest.config.mts"]
+  "include": ["src/**/*", "tests/**/*", "scripts/**/*", "vitest.config.mts"]
 }

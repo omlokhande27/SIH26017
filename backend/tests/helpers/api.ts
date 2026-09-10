@@ -12,6 +12,8 @@ import { supabaseMock } from './supabase-mock';
 import type { AppRole } from '../../src/config/roles';
 
 export const SECRET = 'test-jwt-secret-not-a-real-key';
+/** Matches the default derived from SUPABASE_URL in tests/setup.ts. */
+export const ISSUER = 'https://test-project.supabase.co/auth/v1';
 
 export const USERS = {
   admin: '11111111-1111-4111-8111-111111111111',
@@ -39,6 +41,7 @@ export function tokenFor(userId: string, claimedRole = 'ADMIN'): string {
     {
       sub: userId,
       aud: 'authenticated',
+      iss: ISSUER,
       email: `${userId}@example.invalid`,
       user_metadata: { role: claimedRole },
     },
