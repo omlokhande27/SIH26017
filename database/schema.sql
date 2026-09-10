@@ -91,6 +91,49 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- --- automatic profile provisioning ------------------------------------------
+-- Every authenticated user must have a profiles row, because the backend
+-- resolves authorization from this table and fails closed when the row is
+-- absent. Without this trigger a freshly signed-up user authenticates
+-- successfully and is then refused by every endpoint.
+--
+-- ##########################################################################
+-- # THE ROLE IS A HARD-CODED LITERAL. IT IS NEVER READ FROM USER INPUT.    #
+-- #                                                                        #
+-- # raw_user_meta_data is whatever the client sent to the signup call, and #
+-- # the user can rewrite it at any time via auth.updateUser(). Sourcing    #
+-- # the role from it — even "just as a default" — would let anyone         #
+-- # self-provision as ADMIN during signup. Promotion is an ADMIN action    #
+-- # performed against profiles, guarded by RLS.                            #
+-- ##########################################################################
+--
+-- full_name IS taken from metadata: it is a display string, carries no
+-- privilege, and is trimmed and length-capped below. Anything that grants
+-- authority must not follow the same path.
+CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, role)
+  VALUES (
+    NEW.id,
+    NULLIF(LEFT(TRIM(COALESCE(NEW.raw_user_meta_data ->> 'full_name', '')), 200), ''),
+    'VIEWER'   -- literal, never NEW.raw_user_meta_data ->> 'role'
+  )
+  ON CONFLICT (id) DO NOTHING;   -- idempotent; never overwrites an existing role
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_auth_user();
+
 
 -- ----------------------------------------------------------------------------
 -- 5. PROJECTS

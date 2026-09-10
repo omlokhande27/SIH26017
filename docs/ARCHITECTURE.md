@@ -209,6 +209,30 @@ Two failure modes are handled explicitly rather than defaulted:
 - **Lookup failure** → `503`, not `403`. A database outage is not an
   authorization decision, and reporting it as one misleads whoever debugs it.
 
+Profiles are provisioned by a database trigger (`on_auth_user_created`,
+migration 0003) with role `VIEWER` as a **hard-coded literal**. It is not read
+from signup metadata, which is client-supplied and user-rewritable — sourcing
+it there would make signup a self-service route to ADMIN.
+
+#### Request pipeline (Phase 3)
+
+Every `/api` route runs the same chain, and the order is load-bearing:
+
+```
+requireAuth  ->  requireProjectAccess  ->  validate(zod)  ->  controller  ->  service
+```
+
+Authentication first, because the guard needs a caller. **Authorization before
+validation**, so an unauthorised request is refused without the API first
+reporting whether its payload was well-formed — validating first would turn
+error messages into an oracle about a project the caller cannot access.
+
+Collection endpoints (`GET /api/projects`) have no project id for the guard to
+check, so read scoping is applied inside the service. That is not optional
+belt-and-braces: the backend holds the service-role key and bypasses RLS, so a
+forgotten filter there would leak every project in the country through a route
+that looks harmless.
+
 Neither layer is sufficient alone. See DATABASE.md §9 for the policy matrix and
 the pre-production checklist.
 
@@ -252,8 +276,15 @@ gitignored.
 ```
 landguard-ai/
 ├── frontend/        React + TypeScript dashboard
-├── backend/         Node.js + Express + TypeScript API   [Phase 1 — done]
-│   └── tests/       auth / authorization / env (84 tests)
+├── backend/         Node.js + Express + TypeScript API   [Phase 3 — done]
+│   ├── src/
+│   │   ├── config/      env, Supabase clients, role definitions
+│   │   ├── controllers/ thin request/response handlers
+│   │   ├── middleware/  auth, authorization, validation, errors
+│   │   ├── routes/      route definitions
+│   │   ├── services/    business logic and persistence
+│   │   └── validators/  Zod schemas
+│   └── tests/       275 tests (vitest + supertest)
 ├── ml-service/      Python FastAPI prediction service
 ├── database/        schema.sql, seed.sql, migrations/    [Phase 2 — done]
 │   ├── schema.sql
@@ -312,6 +343,6 @@ and a "table not found" error is indistinguishable from success.
 | 1 | Backend foundation — TypeScript, Express, config, middleware, `/health` | done |
 | 2 | Database schema, RLS, seed data, regression suite, docs, health-check upgrade | done |
 | 2.2 | Git at project root, JWT/role authorization fix, reusable guards, env hardening, backend tests | done |
-| 3 | Business APIs — projects, land, compensation, issues, risk factors | not started |
+| 3 | Business APIs — projects, land, compensation, issues, risk factors, feature snapshots | done |
 | 4 | ML service + prediction orchestration | not started |
 | 5 | Frontend dashboard | not started |

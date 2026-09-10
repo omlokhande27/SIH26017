@@ -50,8 +50,12 @@ export const SUPABASE_SHIM_SQL = `
 CREATE SCHEMA IF NOT EXISTS auth;
 
 CREATE TABLE IF NOT EXISTS auth.users (
-  id    UUID PRIMARY KEY,
-  email TEXT UNIQUE
+  id                 UUID PRIMARY KEY,
+  email              TEXT UNIQUE,
+  -- Supabase stores the client-supplied signup metadata here. It is included
+  -- in the shim precisely so the provisioning trigger can be tested against a
+  -- hostile value: a signup payload claiming role ADMIN.
+  raw_user_meta_data JSONB
 );
 
 CREATE OR REPLACE FUNCTION auth.uid()

@@ -3,6 +3,7 @@ import cors from 'cors';
 import { env } from './config/env';
 import { errorMiddleware } from './middleware/error.middleware';
 import healthRouter from './routes/health.route';
+import projectRouter from './routes/project.route';
 
 const app: Application = express();
 
@@ -19,6 +20,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/health', healthRouter);
+
+// Business API. Everything under /api requires authentication — the router
+// applies requireAuth to all of its routes.
+app.use('/api', projectRouter);
 
 // 404 handler for unregistered routes
 app.use((_req: Request, res: Response) => {

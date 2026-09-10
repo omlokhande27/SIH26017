@@ -53,6 +53,7 @@ psql "$DATABASE_URL" -f database/migrations/0002_add_something.sql
 |---|---|---|
 | 0001 | `../schema.sql` | Initial schema: 14 tables, RLS policies, indexes, triggers |
 | 0002 | `0002_prediction_result_matches_status.sql` | `predictions`: result columns nullable, `predictions_result_matches_status` CHECK ties them to `prediction_status` |
+| 0003 | `0003_auto_provision_profiles.sql` | `on_auth_user_created` trigger provisions a VIEWER profile for every new auth user; backfills existing users |
 
 A fresh install runs `schema.sql` alone and already includes every migration
 listed above; the numbered files exist for databases created before the change.

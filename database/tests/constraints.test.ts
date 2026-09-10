@@ -567,8 +567,11 @@ describe('foreign keys and uniqueness', () => {
   it('rejects a duplicate project assignment', async () => {
     const projectId = await createProject(db);
     const userId = '00000000-0000-4000-8000-00000000f001';
+    // The on_auth_user_created trigger provisions the profile row as VIEWER,
+    // so this only needs to promote it — inserting the profile again would
+    // collide with what the trigger already created.
     await db.query(`INSERT INTO auth.users (id, email) VALUES ($1, 'a@example.invalid')`, [userId]);
-    await db.query(`INSERT INTO public.profiles (id, role) VALUES ($1, 'OFFICER')`, [userId]);
+    await db.query(`UPDATE public.profiles SET role = 'OFFICER' WHERE id = $1`, [userId]);
     await db.query(`INSERT INTO public.project_assignments (project_id, user_id) VALUES ($1, $2)`, [
       projectId,
       userId,
