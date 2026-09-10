@@ -1,0 +1,23 @@
+{
+  "name": "landguard-ai-database",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "LandGuard AI database schema, seed data and regression test suite",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:schema": "vitest run tests/schema.test.ts",
+    "test:constraints": "vitest run tests/constraints.test.ts",
+    "test:leakage": "vitest run tests/leakage.test.ts",
+    "test:seed": "vitest run tests/seed.test.ts",
+    "test:rls": "vitest run tests/rls.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.2.17",
+    "@types/node": "^22.20.2",
+    "typescript": "^5.6.3",
+    "vitest": "^5.0.0"
+  }
+}

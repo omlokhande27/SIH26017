@@ -1,0 +1,75 @@
+# ---------------------------------------------------------------------------
+# Secrets — never commit these.
+# ---------------------------------------------------------------------------
+# `.env.*` also matches `.env.example`, so the negation below re-includes it.
+# Order matters: a later negation cannot resurrect a file whose PARENT
+# directory is ignored, but for plain files in a tracked directory it works.
+.env
+.env.*
+!.env.example
+
+# Common credential shapes, in case a key file is ever dropped in the tree.
+*.pem
+*.key
+!**/tests/**/*.key
+secrets.json
+service-account*.json
+
+# ---------------------------------------------------------------------------
+# Node
+# ---------------------------------------------------------------------------
+node_modules/
+dist/
+build/
+coverage/
+*.log
+npm-debug.log*
+yarn-error.log*
+.npm/
+*.tsbuildinfo
+
+# ---------------------------------------------------------------------------
+# Python / ml-service
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ---------------------------------------------------------------------------
+# Trained model artefacts — large binaries, reproducible from training code.
+# The directories themselves are kept via .gitkeep.
+# ---------------------------------------------------------------------------
+models/*.joblib
+models/*.pkl
+models/*.onnx
+models/*.bin
+!models/.gitkeep
+
+# ---------------------------------------------------------------------------
+# Data — provenance matters, so datasets are added deliberately, never swept
+# in by a glob. Committing a stray CSV of unclear origin is exactly the
+# "is this real government data?" problem the docs warn about.
+# ---------------------------------------------------------------------------
+data/*.csv
+data/*.xlsx
+data/*.parquet
+!data/.gitkeep
+!data/README.md
+
+# ---------------------------------------------------------------------------
+# OS / editor
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~

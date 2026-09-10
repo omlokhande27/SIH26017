@@ -1,0 +1,12 @@
+node_modules/
+dist/
+
+# Environment — never commit real credentials
+.env
+.env.local
+.env.*.local
+
+*.log
+npm-debug.log*
+.DS_Store
+coverage/
