@@ -1,0 +1,139 @@
+/**
+ * env.test.ts — environment validation rules.
+ *
+ * `parseEnv` is exercised directly rather than by importing the module for its
+ * side effect, because the module exits the process on failure. The two things
+ * worth protecting here are the production guard on ML_SERVICE_URL and the
+ * optionality of the LLM key.
+ */
+import { describe, it, expect } from 'vitest';
+import { parseEnv } from '../src/config/env';
+
+/** The minimum set of variables a valid configuration must carry. */
+const base = {
+  SUPABASE_URL: 'https://test.supabase.co',
+  SUPABASE_ANON_KEY: 'anon',
+  SUPABASE_SERVICE_ROLE_KEY: 'service',
+  JWT_SECRET: 'secret',
+} satisfies NodeJS.ProcessEnv;
+
+describe('required configuration', () => {
+  it('accepts a complete development configuration', () => {
+    const result = parseEnv({ ...base, NODE_ENV: 'development' });
+    expect(result.success).toBe(true);
+  });
+
+  it.each(['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY', 'JWT_SECRET'])(
+    'rejects a configuration missing %s',
+    (key) => {
+      const incomplete: NodeJS.ProcessEnv = { ...base };
+      delete incomplete[key];
+      expect(parseEnv(incomplete).success).toBe(false);
+    },
+  );
+
+  it('rejects a malformed SUPABASE_URL', () => {
+    expect(parseEnv({ ...base, SUPABASE_URL: 'not-a-url' }).success).toBe(false);
+  });
+});
+
+describe('ML_SERVICE_URL production guard', () => {
+  it('is optional in development', () => {
+    const result = parseEnv({ ...base, NODE_ENV: 'development' });
+    expect(result.success).toBe(true);
+  });
+
+  it('is REQUIRED in production — no silent localhost default', () => {
+    // The previous schema defaulted to http://localhost:8000 unconditionally,
+    // so a production deploy that forgot the variable booted cleanly and
+    // pointed at its own loopback.
+    const result = parseEnv({ ...base, NODE_ENV: 'production' });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const paths = result.error.issues.flatMap((i) => i.path);
+      expect(paths).toContain('ML_SERVICE_URL');
+    }
+  });
+
+  it('accepts production when ML_SERVICE_URL is supplied explicitly', () => {
+    const result = parseEnv({
+      ...base,
+      NODE_ENV: 'production',
+      ML_SERVICE_URL: 'https://ml.internal.example',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it.each([
+    ['bare host:port', 'localhost:8000'],
+    ['no scheme', 'ml.internal.example'],
+    ['wrong scheme', 'ftp://ml.internal.example'],
+    ['empty', ''],
+  ])('rejects a malformed ML_SERVICE_URL: %s', (_label, value) => {
+    // `localhost:8000` is the important one — `new URL()` parses it as scheme
+    // "localhost", so a plain `.url()` check would let it through.
+    expect(parseEnv({ ...base, ML_SERVICE_URL: value }).success).toBe(false);
+  });
+
+  it.each([
+    ['http', 'http://localhost:8000'],
+    ['https', 'https://ml.internal.example'],
+  ])('accepts a well-formed %s URL', (_label, value) => {
+    expect(parseEnv({ ...base, ML_SERVICE_URL: value }).success).toBe(true);
+  });
+
+  it('applies the same protocol rule to SUPABASE_URL', () => {
+    expect(parseEnv({ ...base, SUPABASE_URL: 'localhost:54321' }).success).toBe(false);
+  });
+});
+
+describe('optional secrets', () => {
+  it('runs without OPENAI_API_KEY — the LLM layer is optional', () => {
+    // The core system must never depend on the LLM being configured.
+    const result = parseEnv({ ...base });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.OPENAI_API_KEY).toBeUndefined();
+  });
+
+  it('accepts OPENAI_API_KEY when supplied', () => {
+    const result = parseEnv({ ...base, OPENAI_API_KEY: 'sk-test-placeholder' });
+    expect(result.success).toBe(true);
+  });
+
+  it('runs without ML_SERVICE_API_KEY', () => {
+    expect(parseEnv({ ...base }).success).toBe(true);
+  });
+});
+
+describe('LOG_LEVEL', () => {
+  it('defaults to info', () => {
+    const result = parseEnv({ ...base });
+    if (result.success) expect(result.data.LOG_LEVEL).toBe('info');
+  });
+
+  it.each(['debug', 'info', 'warn', 'error'])('accepts %s', (level) => {
+    expect(parseEnv({ ...base, LOG_LEVEL: level }).success).toBe(true);
+  });
+
+  it('rejects an unknown level', () => {
+    expect(parseEnv({ ...base, LOG_LEVEL: 'verbose' }).success).toBe(false);
+  });
+});
+
+describe('secret hygiene', () => {
+  it('never places a secret value in a validation error message', () => {
+    // A validation failure must not put the offending key into a log line.
+    const result = parseEnv({
+      ...base,
+      SUPABASE_URL: 'not-a-url',
+      JWT_SECRET: 'super-secret-value-abc123',
+      OPENAI_API_KEY: 'sk-should-never-be-logged',
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const serialised = JSON.stringify(result.error.issues);
+      expect(serialised).not.toContain('super-secret-value-abc123');
+      expect(serialised).not.toContain('sk-should-never-be-logged');
+    }
+  });
+});

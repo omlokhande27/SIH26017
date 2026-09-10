@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // The base config sets rootDir to ./src for the build. Type-checking also
+    // covers tests/ and the vitest config, which sit outside it, so rootDir is
+    // widened to the package root here. Nothing is emitted from this config,
+    // so the build output layout is unaffected.
+    "rootDir": ".",
+    // The application builds to CommonJS, but Vitest runs the tests as ESM.
+    // The test files use top-level await to import a module *after* vi.mock has
+    // registered it, which CommonJS cannot express. This override type-checks
+    // them the way they actually execute.
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["src/**/*", "tests/**/*", "vitest.config.mts"]
+}

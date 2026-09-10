@@ -180,6 +180,35 @@ queries**. Backend authorization is therefore mandatory, not optional. RLS is
 the backstop that still holds if an API handler forgets a check, and the primary
 control for anything the frontend reads directly from Supabase.
 
+#### The backend authorization layer (Phase 2.2)
+
+Three modules, so no controller re-derives a policy decision:
+
+| Module | Responsibility |
+|---|---|
+| `middleware/auth.middleware.ts` | `requireAuth` — verify the JWT, then resolve the role from `profiles` |
+| `middleware/authorize.middleware.ts` | `requireRole`, `requireProjectAccess` / `requireProjectRead` / `requireProjectWrite` |
+| `services/authorization.service.ts` | `canAccessProject`, `isAssignedToProject` — mirrors `is_assigned_to_project()` in the schema |
+
+`config/roles.ts` holds the four role constants and the capability sets, so the
+policy is stated once and the uppercase/lowercase mismatch that previously
+existed cannot recur.
+
+> **Identity and role come from different sources, deliberately.** The JWT
+> proves *who* the caller is; `public.profiles` decides *what they may do*. The
+> role is never read from the token. Supabase's `user_metadata` is writable by
+> the user — `supabase.auth.updateUser({ data: { role: 'ADMIN' } })` yields a
+> genuine, correctly-signed token carrying an attacker-chosen claim. Verifying
+> the signature does not make the claim inside it true.
+
+Two failure modes are handled explicitly rather than defaulted:
+
+- **No profile row** → `403`, never a fallback to VIEWER. Under the prototype
+  visibility policy VIEWER reads every project nationally, so "default to the
+  least role" would grant national read access to any valid token holder.
+- **Lookup failure** → `503`, not `403`. A database outage is not an
+  authorization decision, and reporting it as one misleads whoever debugs it.
+
 Neither layer is sufficient alone. See DATABASE.md §9 for the policy matrix and
 the pre-production checklist.
 
@@ -224,6 +253,7 @@ gitignored.
 landguard-ai/
 ├── frontend/        React + TypeScript dashboard
 ├── backend/         Node.js + Express + TypeScript API   [Phase 1 — done]
+│   └── tests/       auth / authorization / env (84 tests)
 ├── ml-service/      Python FastAPI prediction service
 ├── database/        schema.sql, seed.sql, migrations/    [Phase 2 — done]
 │   ├── schema.sql
@@ -281,6 +311,7 @@ and a "table not found" error is indistinguishable from success.
 |---|---|---|
 | 1 | Backend foundation — TypeScript, Express, config, middleware, `/health` | done |
 | 2 | Database schema, RLS, seed data, regression suite, docs, health-check upgrade | done |
+| 2.2 | Git at project root, JWT/role authorization fix, reusable guards, env hardening, backend tests | done |
 | 3 | Business APIs — projects, land, compensation, issues, risk factors | not started |
 | 4 | ML service + prediction orchestration | not started |
 | 5 | Frontend dashboard | not started |
