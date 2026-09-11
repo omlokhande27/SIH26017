@@ -1,0 +1,45 @@
+# ---------------------------------------------------------------------------
+# LandGuard AI — ML service
+#
+# Deliberately small. Every dependency here is used; nothing is installed
+# "in case we need it later".
+#
+# Python 3.12 — NOT 3.14. The scientific stack's wheel availability on 3.14
+# was unverified at the time of writing, and debugging a source build is not
+# a good use of a prototype's time.
+# ---------------------------------------------------------------------------
+
+# --- API ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# --- data and modelling ---
+pandas==2.2.3
+numpy==2.2.1
+scikit-learn==1.6.1
+joblib==1.4.2
+
+# --- tests ---
+pytest==8.3.4
+httpx==0.28.1          # FastAPI TestClient transport
+
+# ---------------------------------------------------------------------------
+# DELIBERATELY NOT INSTALLED
+#
+#   xgboost, lightgbm  A gradient-booster cannot extract signal this dataset
+#                      does not contain. With 22 distinct feature vectors and
+#                      83% of rows sharing one, it would memorise the 21
+#                      singletons and report a flattering in-sample R² that
+#                      means nothing. scikit-learn's RandomForest already
+#                      demonstrates that honestly, at a fraction of the
+#                      install weight. Revisit when the data supports it.
+#
+#   shap               SHAP explains a model's contribution to its own output.
+#                      Explaining a model that does not beat a median baseline
+#                      would dress up noise as insight. The rule engine
+#                      provides real, auditable explanations instead — it is
+#                      the primary signal by design. Revisit in Phase 5 if the
+#                      ML model ever earns its place.
+# ---------------------------------------------------------------------------

@@ -19,12 +19,13 @@ slip.
 | 2.3 | Live schema, RLS and auth verification against the real Supabase project | ✅ done |
 | 3 | Business APIs — projects, land, compensation, issues, risk factors, snapshots | ✅ done |
 | 3.1 | All 27 endpoints verified end-to-end against the live database | ✅ done |
-| 4 | FastAPI ML service — rule engine, baseline-first training | ⬜ not started |
+| 4 | FastAPI ML service — rule engine, baseline-first training | ✅ done |
 | 5 | Prediction orchestration, SHAP explanations, recommendations | ⬜ not started |
 | 6 | Dashboard APIs, LLM summaries, deployment | ⬜ not started |
 
-**Test coverage today: 334 backend (mocked) + 179 database (PGlite) + 61 live
-E2E + 64 live database checks — all passing.**
+**Test coverage today: 343 backend (mocked) + 179 database (PGlite) + 97 Python
++ 61 live Supabase E2E + 12 live ML integration + 64 live database checks — all
+passing.**
 
 The three layers prove different things and are never conflated: the mocked and
 PGlite suites prove logic, and only the live suites prove the real project
@@ -61,7 +62,17 @@ landguard-ai/
     └── API.md               endpoint reference
 ```
 
-`ml-service/` (FastAPI) arrives in Phase 4.
+```
+ml-service/          FastAPI — rule engine (primary) + experimental ML
+├── app/
+│   ├── services/    rule_engine, feature_mapper, recommendations, explanation
+│   ├── models/      train, predict, model_loader
+│   ├── schemas/     request/response contracts (the leakage boundary)
+│   └── api/         routes
+├── scripts/         audit_dataset.py
+├── data/            datasets with provenance (see data/README.md)
+└── tests/           97 tests
+```
 
 ---
 
@@ -146,10 +157,11 @@ a real measurement and gets learned as fact.
 data, rule-based warnings, ML estimates and actual outcomes are distinct things
 and are labelled as such.
 
-**The ML claim matches the evidence.** The available historical dataset is
-small and largely imputed, so the rule engine is the primary early-warning
-signal and the ML model ships as a clearly-labelled experimental estimate. See
-`docs/ML_MODEL.md` when Phase 4 lands.
+**The ML claim matches the evidence.** No trained model beat a median baseline
+on this dataset — 130 rows, 22 distinct feature vectors, 83% of them identical,
+every R² negative. So the rule engine is the primary signal and the delay figure
+ships labelled `BASELINE_MEDIAN` with `confidence: LOW` and a note saying it is
+not a model prediction. See [`ml-service/README.md`](ml-service/README.md).
 
 ---
 

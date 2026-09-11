@@ -1,0 +1,64 @@
+{
+  "model_version": "0.1.0-median_baseline",
+  "model_type": "median_baseline",
+  "trained_at": "2026-09-11T16:45:59.923809+00:00",
+  "training_rows": 130,
+  "distinct_feature_vectors": 22,
+  "features": [
+    "compensation_pending_rs",
+    "court_cases_count",
+    "affected_landowners_count",
+    "R&R_pending_count",
+    "award_delay_days",
+    "land_parcels_count",
+    "compensation_pending",
+    "court_case",
+    "possession_obtained",
+    "government_coordination_delay",
+    "R&R_required"
+  ],
+  "target": "delay_days_target",
+  "cv_strategy": "GroupKFold over identical feature vectors",
+  "metrics": {
+    "mae": 306.78,
+    "rmse": 374.25,
+    "r2": -0.0092,
+    "folds": 5
+  },
+  "baseline_metrics": {
+    "mae": 306.78,
+    "rmse": 374.25,
+    "r2": -0.0092,
+    "folds": 5
+  },
+  "all_results": {
+    "median_baseline": {
+      "mae": 306.78,
+      "rmse": 374.25,
+      "r2": -0.0092,
+      "folds": 5
+    },
+    "ridge": {
+      "mae": 332.33,
+      "rmse": 430.68,
+      "r2": -0.0528,
+      "folds": 5
+    },
+    "random_forest": {
+      "mae": 323.59,
+      "rmse": 405.94,
+      "r2": -0.0452,
+      "folds": 5
+    }
+  },
+  "beats_baseline": false,
+  "improvement_over_baseline_pct": -5.48,
+  "selection_rule": "A challenger must lower MAE by >=5% to be selected over the median.",
+  "limitations": {
+    "dataset_size_limited": true,
+    "feature_variance_limited": true,
+    "predictors_largely_imputed": true,
+    "ml_outperforms_baseline": false,
+    "note": "130 rows, 22 distinct feature vectors, 108 of them identical. All 22 predictor columns are imputed or derived for every row, including the 4 marked REAL. This estimate is EXPERIMENTAL and must not be presented as a reliable forecast. The rule engine is the primary decision-support signal."
+  }
+}

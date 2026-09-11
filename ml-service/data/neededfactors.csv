@@ -1,0 +1,52 @@
+case_id_combined,region,location,land_area_ha,actual_land_rate_rs_sqm,expected_land_rate_rs_sqm,delay_days_target,land_rate_difference_rs_sqm,land_acquisition_percentage,land_parcels_count,affected_landowners_count,compensation_pending_rs,court_cases_count,award_delay_days,fund_deposit_delay_days,possession_delay_days,R&R_pending_count,landowner_objection,landowner_agitation,compensation_pending,court_case,enhanced_compensation_claim,possession_obtained,RoW_issue,encroachment,land_record_issue,government_coordination_delay,forest_clearance,R&R_required,land_acquisition_status,project_type
+GNIDA-1,Uttar Pradesh,Bisrakh Jalalpur,412.34,838.65,379.89,747.0,458.76,,,,,,,,,,0,0,0,0,0,0,0,0,0,1,0,0,Unknown,Urban/Industrial
+GNIDA-2,Uttar Pradesh,Ghanghola,204.92,925.82,846.14,995.0,79.68,,,,,,,,,,0,0,0,0,0,0,0,0,0,1,0,0,Unknown,Urban/Industrial
+GNIDA-3,Uttar Pradesh,Gharbara,57.0,384.89,371.89,285.0,13.0,,,,,,,,,,0,0,0,0,0,0,0,0,0,1,0,0,Unknown,Urban/Industrial
+GNIDA-4,Uttar Pradesh,Pali,203.59,849.41,384.73,410.0,464.68,,,,,,,,,,0,0,0,0,0,0,0,0,0,1,0,0,Unknown,Urban/Industrial
+HARYANA-1,Haryana,"PHED-III, Palwal",204.255,844.03,382.31,730.5,461.72,,,,,,,,,,0,0,1,0,1,0,0,0,0,0,0,0,Unknown,Unknown
+HARYANA-2,Haryana,"Rewari Lift Irrigation Division, Rewari",204.255,844.03,382.31,273.94,461.72,,,,,,,,,,0,0,1,0,1,0,0,0,0,0,0,0,Unknown,Irrigation/Water
+HARYANA-3,Haryana,"Ghaggar Water Services Division, Sirsa",204.255,844.03,382.31,547.88,461.72,,,,,,,,,,0,0,1,0,1,0,0,0,0,0,0,0,Unknown,Irrigation/Water
+HARYANA-4,Haryana,"HUDA, Gurgaon",204.255,844.03,382.31,380.47,461.72,,,,,,,,,,0,0,1,0,1,0,0,0,0,0,0,0,Unknown,Unknown
+HARYANA-5,Haryana,"HUDA, Rohtak",204.255,844.03,382.31,563.09,461.72,,,,,,,,,,0,0,1,0,1,0,0,0,0,0,0,0,Unknown,Unknown
+HARYANA-6,Haryana,"HUDA, Faridabad",204.255,844.03,382.31,1050.09,461.72,,,,,,,,,,0,0,1,0,1,0,0,0,0,0,0,0,Unknown,Unknown
+HARYANA-7,Haryana,"Sirsa Water Services, Sirsa",204.255,844.03,382.31,213.06,461.72,,,,,,,,,,0,0,1,0,1,0,0,0,0,0,0,0,Unknown,Irrigation/Water
+HARYANA-8,Haryana,"Nehrana Water Services, Sirsa",204.255,844.03,382.31,547.88,461.72,,,,,,,,,,0,0,1,0,1,0,0,0,0,0,0,0,Unknown,Irrigation/Water
+HARYANA-9,Haryana,"Nehrana Water Services, Sirsa",204.255,844.03,382.31,456.56,461.72,,,,,,,,,,0,0,1,0,1,0,0,0,0,0,0,0,Unknown,Irrigation/Water
+HARYANA-10,Haryana,"Nehrana Water Services, Sirsa",204.255,844.03,382.31,487.0,461.72,,,,,,,,,,0,0,1,0,1,0,0,0,0,0,0,0,Unknown,Irrigation/Water
+HARYANA-11,Haryana,"Nehrana Water Services, Sirsa",204.255,844.03,382.31,426.12,461.72,,,,,,,,,,0,0,1,0,1,0,0,0,0,0,0,0,Unknown,Irrigation/Water
+HARYANA-12,Haryana,"Nehrana Water Services, Sirsa",204.255,844.03,382.31,395.69,461.72,,,,,,,,,,0,0,1,0,1,0,0,0,0,0,0,0,Unknown,Irrigation/Water
+HARYANA-13,Haryana,"Nehrana Water Services, Sirsa",204.255,844.03,382.31,395.69,461.72,,,,,,,,,,0,0,1,0,1,0,0,0,0,0,0,0,Unknown,Irrigation/Water
+HARYANA-14,Haryana,"Drinking water supply scheme, 64 villages, Nangal Chaudhary Block, Mahendergarh",204.255,844.03,382.31,91.31,461.72,,,,,,,,,,0,0,0,0,0,0,0,0,0,1,0,0,Unknown,Irrigation/Water
+KARNATAKA-1,Karnataka,"Honnammanakatte near Harohalli, Hosakote Taluk, Bengaluru Rural",76.31,823.07,407.50,499.79,415.57,,,,,,,,,,1,0,0,0,0,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-2,Karnataka,"Kumatagi-Ukkali Road, Basavana Bagewadi Taluk, Vijayapura",76.31,823.07,407.50,499.79,415.57,,,,,,,,,,1,0,0,0,0,0,0,0,0,0,0,0,Unknown,Road/Highway
+KARNATAKA-3,Karnataka,Unakal (LAC 28/2013),0.01,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-4,Karnataka,Unakal (LAC 26/2013),0.01,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-5,Karnataka,Unakal (LAC 18/2013),0.01,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-6,Karnataka,Hubballi Town (LAC 14/2013),0.01,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-7,Karnataka,Krishnapura (LAC 9/2013),0.02,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-8,Karnataka,Hubballi Town (LAC 22/2013),0.01,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-9,Karnataka,Unakal (LAC 47/2013),0.01,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-10,Karnataka,Unakal (LAC 44/2013),0.01,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-11,Karnataka,Unakal (LAC 41/2013),0.01,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-12,Karnataka,Hubballi Town (LAC 39/2013),0.01,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-13,Karnataka,Hubballi Town (LAC 38/2013),0.02,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-14,Karnataka,Hubballi Town (LAC 34/2013),0.01,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-15,Karnataka,Unakal (LAC 30/2013),0.00,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-16,Karnataka,Thimmasagara (LAC 159/2014),0.14,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-17,Karnataka,Hubballi Town (LAC 40/2013),0.00,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-18,Karnataka,Hubballi Town (LAC 15/2013),0.00,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-19,Karnataka,Hubballi Town (LAC 19/2013),0.00,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-20,Karnataka,Unakal (LAC 59/2013),0.00,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-21,Karnataka,Unakal (LAC 29/2013),0.01,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-22,Karnataka,Hubballi Town (LAC 56/2013),0.13,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-23,Karnataka,Thimmasagara (LAC 69/2010),0.21,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-24,Karnataka,Hubballi Town (LAC 37/2013),0.02,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-25,Karnataka,Krishnapura (LAC 12/2013),0.05,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-26,Karnataka,Hubballi Town (LAC 32/2013),0.04,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-27,Karnataka,Krishnapura (LAC 43/2013),0.07,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-28,Karnataka,Hubballi Town (LAC 46/2013),0.05,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-29,Karnataka,Unakal (LAC 20/2013),0.13,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-30,Karnataka,Nalavadi (LAC 2/2014),0.14,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-31,Karnataka,Nalavadi (LAC 1/2016),0.15,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-32,Karnataka,Nalavadi (LAC 2/2016),0.31,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown
+KARNATAKA-33,Karnataka,Gokula (LAC 14/2009),0.17,823.07,407.50,499.79,415.57,,,,,,,,,,0,0,1,1,1,0,0,0,0,0,0,0,Unknown,Unknown

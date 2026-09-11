@@ -13,6 +13,9 @@ import { defineConfig } from 'vitest/config';
  */
 export default defineConfig({
   test: {
+    // Each live suite has its own prerequisites — a real Supabase project for
+    // api.live.test.ts, a running FastAPI service for ml-service.live.test.ts —
+    // so the npm scripts target them individually rather than globbing both.
     include: ['tests/live/**/*.live.test.ts'],
     testTimeout: 60_000,
     hookTimeout: 120_000,
