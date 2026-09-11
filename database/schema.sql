@@ -492,11 +492,32 @@ CREATE TABLE IF NOT EXISTS public.predictions (
   model_version_id     UUID REFERENCES public.model_versions(id) ON DELETE SET NULL,
 
   -- NULL only when prediction_status is PENDING or FAILED.
+  -- Delay estimate from the ML service. While prediction_type is
+  -- BASELINE_MEDIAN this is the historical median, carries no project-specific
+  -- signal, and must not be presented as a forecast.
   predicted_delay_days NUMERIC(10, 2) CHECK (predicted_delay_days >= 0),
+
+  -- Risk band from the RULE ENGINE — the primary decision-support signal.
+  -- It is NOT derived from predicted_delay_days; the two systems are kept
+  -- deliberately separate.
   risk_level           TEXT
                        CHECK (risk_level IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
   prediction_status    TEXT NOT NULL DEFAULT 'SUCCESS'
                        CHECK (prediction_status IN ('PENDING', 'SUCCESS', 'FAILED')),
+
+  -- --- combined-assessment fields (migration 0004) -------------------------
+  prediction_type      TEXT
+                       CHECK (prediction_type IN ('BASELINE_MEDIAN', 'EXPERIMENTAL_ML_ESTIMATE')),
+  confidence           TEXT CHECK (confidence IN ('NONE', 'LOW', 'MEDIUM', 'HIGH')),
+  risk_score           NUMERIC(5, 2) CHECK (risk_score >= 0 AND risk_score <= 100),
+  rule_coverage_pct    NUMERIC(5, 2) CHECK (rule_coverage_pct >= 0 AND rule_coverage_pct <= 100),
+  -- FALSE when core inputs were missing. Without this, a low risk_score on a
+  -- project with nothing recorded is indistinguishable from a genuinely
+  -- low-risk project.
+  assessment_complete  BOOLEAN,
+  missing_core_inputs  JSONB,
+  limitations          JSONB,
+
   created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   -- Result presence must agree with the status of the inference attempt.
@@ -540,6 +561,13 @@ CREATE TABLE IF NOT EXISTS public.prediction_explanations (
                          CHECK (contribution_direction IN
                            ('INCREASES_DELAY', 'DECREASES_DELAY', 'NEUTRAL')),
   rank                   INTEGER NOT NULL CHECK (rank > 0),
+
+  -- RULE_ENGINE: a deterministic rule contribution, auditable against a stated
+  -- threshold. MODEL_ATTRIBUTION: a model explaining its own output (SHAP).
+  -- Same shape, entirely different provenance; never conflate them.
+  explanation_source     TEXT NOT NULL DEFAULT 'MODEL_ATTRIBUTION'
+                         CHECK (explanation_source IN ('RULE_ENGINE', 'MODEL_ATTRIBUTION')),
+
   created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
   CONSTRAINT prediction_explanations_unique_rank UNIQUE (prediction_id, rank),
@@ -561,6 +589,9 @@ CREATE TABLE IF NOT EXISTS public.recommendations (
   recommended_action TEXT NOT NULL,
   status             TEXT NOT NULL DEFAULT 'OPEN'
                      CHECK (status IN ('OPEN', 'IN_PROGRESS', 'COMPLETED', 'DISMISSED')),
+  -- The rule that produced this recommendation, so the chain
+  -- evidence -> finding -> action is auditable end to end.
+  source_rule_id     TEXT,
   created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   completed_at       TIMESTAMPTZ,
 
@@ -692,6 +723,8 @@ CREATE INDEX IF NOT EXISTS idx_predictions_risk_level
   ON public.predictions (risk_level);
 CREATE INDEX IF NOT EXISTS idx_predictions_snapshot
   ON public.predictions (feature_snapshot_id);
+CREATE INDEX IF NOT EXISTS idx_predictions_project_latest
+  ON public.predictions (project_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_predictions_model_version
   ON public.predictions (model_version_id);
 

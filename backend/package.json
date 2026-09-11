@@ -14,7 +14,8 @@
     "audit:supabase": "ts-node-dev --transpile-only --respawn=false scripts/supabase-audit.ts",
     "verify:live": "ts-node-dev --transpile-only --respawn=false scripts/verify-live-db.ts",
     "test:live": "LIVE_E2E=1 vitest run --config vitest.live.config.mts tests/live/api.live.test.ts",
-    "test:live:ml": "LIVE_ML=1 vitest run --config vitest.live.config.mts tests/live/ml-service.live.test.ts"
+    "test:live:ml": "LIVE_ML=1 vitest run --config vitest.live.config.mts tests/live/ml-service.live.test.ts",
+    "test:live:predictions": "LIVE_E2E=1 vitest run --config vitest.live.config.mts tests/live/predictions.live.test.ts"
   },
   "keywords": [],
   "author": "",

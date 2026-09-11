@@ -480,13 +480,97 @@ prediction use" meaningless.
 
 ---
 
-## 11. Not implemented in Phase 3
+## 11. Predictions and assessments
 
-No routes exist for any of the following. They arrive in later phases:
+Four endpoints. Running a prediction is a **write**; reading follows project
+read access, so ANALYST and VIEWER can see assessments they cannot generate.
 
-- ML prediction (`predictions`), risk scoring, SHAP explanations
-- Rule-based early-warning engine
-- Recommendations
-- LLM natural-language summaries
-- Actual outcomes / feedback loop
-- Dashboard aggregation and analytics
+There is deliberately **no PATCH and no DELETE**. A prediction records what was
+said about a project at a moment in time; editing it afterwards would destroy
+the only basis on which a past decision can be reviewed.
+
+### `POST /api/projects/:projectId/predictions`
+
+```json
+{ "snapshot_id": "optional-uuid" }
+```
+
+Runs the full workflow: resolve a snapshot → call the ML service → evaluate
+rules → generate recommendations → persist prediction, explanations and
+recommendations → return the assessment.
+
+**Snapshot resolution**, in order: an explicitly supplied `snapshot_id`
+(validated against this project), else the project's most recent snapshot, else
+a new one created now. Phase 3 established that snapshots are intentional
+prediction points and are never created as a side effect of *editing* data —
+requesting a prediction is such a point, so creating one here is consistent
+with that rule.
+
+```json
+{
+  "prediction": {
+    "predicted_delay_days": 596,
+    "model_version": "0.1.0-median_baseline",
+    "prediction_type": "BASELINE_MEDIAN",
+    "confidence": "LOW",
+    "note": "This is the MEDIAN historical delay, not a model prediction. …"
+  },
+  "risk_assessment": {
+    "risk_score": 72.5, "risk_level": "HIGH",
+    "rule_coverage_pct": 93.3, "assessment_complete": true,
+    "triggered_rules": [ … ], "skipped_rules": [ … ],
+    "explanation": "This project is at high risk of land-acquisition delay …"
+  },
+  "recommendations": [ { "title": "…", "action": "…", "priority": "HIGH",
+                         "rationale": "…", "source_rule_id": "LAND_PROGRESS" } ],
+  "limitations": ["dataset_size_limited", "feature_variance_limited",
+                  "predictors_largely_imputed", "ml_outperforms_baseline_false"],
+  "missing_inputs": [],
+  "snapshot": { "id": "…", "snapshot_date": "…" }
+}
+```
+
+> ### The two signals are never merged
+>
+> `risk_assessment` comes from the **rule engine** — deterministic, auditable,
+> and the primary decision-support signal. `prediction.predicted_delay_days` is
+> the **historical median**: no trained model beat a median baseline (every R²
+> negative), so it carries no project-specific signal at all.
+>
+> There is no combined "AI confidence" score, and there will not be one.
+> Averaging a deterministic score with a figure that has no predictive content
+> produces a number that looks authoritative and means nothing.
+
+> **`assessment_complete: false`** means core inputs were missing. A low
+> `risk_score` then reflects incomplete records as much as low risk, and
+> `missing_inputs` names what is absent. Do not present it as reassurance.
+
+**Errors:** `503` if the ML service is unreachable or rejects our key —
+**nothing is persisted**. `422` if the service returns no delay estimate.
+
+### `GET /api/projects/:projectId/predictions`
+### `GET /api/projects/:projectId/predictions/latest`
+### `GET /api/projects/:projectId/assessment`
+
+The stored assessment for the latest prediction — prediction row, ranked
+explanations, and recommendations. **Read back, never recomputed**: re-running
+the rules against today's data would answer a different question from the one
+this endpoint is asked.
+
+Explanations carry `explanation_source: "RULE_ENGINE"` — a deterministic rule
+contribution, not a model's self-attribution. The distinction matters and the
+column exists to keep it.
+
+---
+
+## 12. Not implemented
+
+No routes exist for any of the following:
+
+- SHAP explanations — deliberately absent. Explaining a model that loses to a
+  median baseline would dress up noise as insight. Revisit only if a genuinely
+  predictive model earns it.
+- LLM natural-language summaries (Phase 6)
+- Actual outcomes / feedback loop — `actual_outcomes` has no API surface, which
+  is part of why outcome data cannot reach a prediction
+- Dashboard aggregation and analytics (Phase 6)

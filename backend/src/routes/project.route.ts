@@ -8,11 +8,13 @@ import { validate } from '../middleware/validation.middleware';
 import * as projectController from '../controllers/project.controller';
 import * as dataController from '../controllers/project-data.controller';
 import * as snapshotController from '../controllers/snapshot.controller';
+import * as predictionController from '../controllers/prediction.controller';
 import {
   createProjectSchema,
   listProjectsQuery,
   updateProjectSchema,
 } from '../validators/project.validator';
+import { createPredictionSchema } from '../validators/prediction.validator';
 import {
   createLegalIssueSchema,
   createRiskFactorSchema,
@@ -161,5 +163,28 @@ router.get('/projects/:projectId/snapshots', read(), snapshotController.listSnap
 router.get('/projects/:projectId/snapshots/preview', read(), snapshotController.previewSnapshot);
 router.get('/projects/:projectId/snapshots/:id', read(), snapshotController.getSnapshot);
 router.post('/projects/:projectId/snapshots', write(), snapshotController.createSnapshot);
+
+// --- predictions and assessments -------------------------------------------
+// Running a prediction is a WRITE: it creates a permanent record, may create a
+// snapshot, and persists explanations and recommendations. Reading follows
+// project read access, so ANALYST and VIEWER can see assessments they must not
+// be able to generate.
+//
+// There is deliberately no PATCH or DELETE. A prediction records what was said
+// about a project at a moment in time; editing it after the fact would destroy
+// the only basis on which a past decision can be reviewed.
+router.get('/projects/:projectId/predictions', read(), predictionController.listPredictions);
+router.get(
+  '/projects/:projectId/predictions/latest',
+  read(),
+  predictionController.getLatestPrediction,
+);
+router.get('/projects/:projectId/assessment', read(), predictionController.getAssessment);
+router.post(
+  '/projects/:projectId/predictions',
+  write(),
+  validate(createPredictionSchema),
+  predictionController.createPrediction,
+);
 
 export default router;

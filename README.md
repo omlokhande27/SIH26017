@@ -20,12 +20,13 @@ slip.
 | 3 | Business APIs — projects, land, compensation, issues, risk factors, snapshots | ✅ done |
 | 3.1 | All 27 endpoints verified end-to-end against the live database | ✅ done |
 | 4 | FastAPI ML service — rule engine, baseline-first training | ✅ done |
-| 5 | Prediction orchestration, SHAP explanations, recommendations | ⬜ not started |
+| 5 | Prediction orchestration, persistence, assessment APIs | ✅ done |
 | 6 | Dashboard APIs, LLM summaries, deployment | ⬜ not started |
 
-**Test coverage today: 343 backend (mocked) + 179 database (PGlite) + 97 Python
+**Test coverage today: 380 backend (mocked) + 179 database (PGlite) + 97 Python
 + 61 live Supabase E2E + 12 live ML integration + 64 live database checks — all
-passing.**
+passing.** Phase 5's own live suite (15 tests) is written and gated, pending
+migration 0004 on the live project.
 
 The three layers prove different things and are never conflated: the mocked and
 PGlite suites prove logic, and only the live suites prove the real project

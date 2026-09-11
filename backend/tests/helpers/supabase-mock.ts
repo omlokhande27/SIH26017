@@ -129,14 +129,17 @@ export class SupabaseMock {
 
       switch (operation) {
         case 'insert': {
-          const inserted = self.applyGenerated(table, {
-            id: nextId(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            ...payload,
-          });
-          self.tables.set(table, [...all, inserted]);
-          return [inserted];
+          const incoming = Array.isArray(payload) ? (payload as Row[]) : [payload as Row];
+          const inserted = incoming.map((row) =>
+            self.applyGenerated(table, {
+              id: nextId(),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              ...row,
+            }),
+          );
+          self.tables.set(table, [...all, ...inserted]);
+          return inserted;
         }
 
         case 'update': {
@@ -199,9 +202,13 @@ export class SupabaseMock {
         }
         return builder;
       },
-      insert(values: Row) {
+      insert(values: Row | Row[]) {
         operation = 'insert';
-        payload = values;
+        // supabase-js accepts an array for a bulk insert, and the prediction
+        // orchestrator uses it for explanations and recommendations. Treating
+        // an array as one row silently stored a single malformed record and
+        // made the persistence assertions meaningless.
+        payload = values as Row;
         return builder;
       },
       update(values: Row) {

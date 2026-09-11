@@ -225,5 +225,22 @@ export async function checkMlService(): Promise<MlServiceHealth | null> {
   }
 }
 
+export interface ModelInfo {
+  model_version: string | null;
+  model_type: string | null;
+  trained_at: string | null;
+  training_rows: number | null;
+  distinct_feature_vectors: number | null;
+  features: string[];
+  metrics: Record<string, number>;
+  baseline_metrics: Record<string, number>;
+  beats_baseline: boolean;
+}
+
+/** Model card from the ML service, used to keep `model_versions` in step. */
+export async function getModelInfo(): Promise<ModelInfo> {
+  return callMlService<ModelInfo>('/model-info');
+}
+
 /** The request payload builder, exported for tests. */
 export const __testing = { toRequestSnapshot };
