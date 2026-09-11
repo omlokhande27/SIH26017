@@ -3,6 +3,10 @@ import { canAccessProject, type AccessMode } from '../services/authorization.ser
 import { AuthenticatedRequest } from '../types';
 import type { AppRole } from '../config/roles';
 
+/** RFC 4122 UUID, the shape every id column in this schema uses. */
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 /**
  * Reusable authorization guards.
  *
@@ -79,6 +83,22 @@ export function requireProjectAccess(options: ProjectAccessOptions = {}) {
     const raw = req.params[param] ?? req.params.id;
     if (typeof raw !== 'string' || raw.length === 0) {
       res.status(400).json({ success: false, error: `Missing project identifier ("${param}")` });
+      return;
+    }
+
+    // Reject a malformed id here rather than letting it reach PostgreSQL.
+    //
+    // A non-UUID compared against a uuid column raises SQLSTATE 22P02, which
+    // the error translator cannot distinguish from a genuine database fault —
+    // so a typo in a URL came back as 503 "database unavailable". That is wrong
+    // twice over: it tells operators there is an outage when there is not, and
+    // it invites the client to retry a request that can never succeed.
+    //
+    // Checking the format costs nothing and reveals nothing: a string that
+    // cannot be a UUID cannot identify any project, so refusing it leaks no
+    // information about what exists.
+    if (!UUID_PATTERN.test(raw)) {
+      res.status(400).json({ success: false, error: 'Invalid project identifier' });
       return;
     }
 

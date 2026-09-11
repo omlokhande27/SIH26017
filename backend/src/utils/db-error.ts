@@ -38,6 +38,10 @@ const SQLSTATE = {
   GENERATED_ALWAYS: '428C9',
   UNDEFINED_TABLE: '42P01',
   INSUFFICIENT_PRIVILEGE: '42501',
+  /** e.g. a non-UUID string compared against a uuid column. */
+  INVALID_TEXT_REPRESENTATION: '22P02',
+  INVALID_DATETIME_FORMAT: '22007',
+  NUMERIC_VALUE_OUT_OF_RANGE: '22003',
 } as const;
 
 /** PostgREST codes that mean "the schema is not deployed". */
@@ -158,6 +162,17 @@ export function translateDbError(
 
     case SQLSTATE.INSUFFICIENT_PRIVILEGE:
       return new AppError(403, 'Insufficient permissions');
+
+    case SQLSTATE.INVALID_TEXT_REPRESENTATION:
+    case SQLSTATE.INVALID_DATETIME_FORMAT:
+    case SQLSTATE.NUMERIC_VALUE_OUT_OF_RANGE:
+      // The client sent something PostgreSQL could not parse into the column's
+      // type — a malformed UUID, an impossible timestamp, an out-of-range
+      // number. That is a bad request, not a failing dependency. Falling
+      // through to the default here previously reported 503, which told
+      // operators the database was down and told the client to retry a request
+      // that could never succeed.
+      return new AppError(400, 'A value in the request is not in a valid format.');
 
     default:
       // Unknown database failure, or the database is unreachable. Not the

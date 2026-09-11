@@ -270,6 +270,39 @@ describe('error handling', () => {
     expect(statusCode()).toBe(403);
   });
 
+  it.each([
+    ['plain text', 'not-a-uuid'],
+    ['numeric', '12345'],
+    ['almost a uuid', 'aaaaaaaa-0000-4000-8000-00000000zzzz'],
+    ['sql-ish', "' OR 1=1--"],
+  ])('returns 400, NOT 503, for a malformed project id: %s', async (_label, badId) => {
+    // Regression for a bug found only by the live suite. A non-UUID reaching
+    // PostgreSQL raises SQLSTATE 22P02, which the translator could not tell
+    // from a database outage — so a typo in a URL came back as 503. That tells
+    // operators there is an incident when there is not, and invites the client
+    // to retry a request that can never succeed.
+    const req = mockRequest({ user: user('ADMIN'), params: { projectId: badId } });
+    const { res, statusCode } = mockResponse();
+    const next = mockNext();
+
+    await requireProjectAccess()(req, res, next);
+
+    expect(next.called()).toBe(false);
+    expect(statusCode()).toBe(400);
+  });
+
+  it('rejects a malformed id before querying the database at all', async () => {
+    // Cheapest proof it short-circuits: make every query fail, and observe that
+    // the response is still 400 rather than the 503 a real query would produce.
+    supabaseMock.failTable('projects', 'should never be reached');
+    const req = mockRequest({ user: user('ADMIN'), params: { projectId: 'not-a-uuid' } });
+    const { res, statusCode } = mockResponse();
+
+    await requireProjectAccess()(req, res, mockNext());
+
+    expect(statusCode()).toBe(400);
+  });
+
   it('returns 400 when the project id param is missing', async () => {
     const req = mockRequest({ user: user('ADMIN'), params: {} });
     const { res, statusCode } = mockResponse();

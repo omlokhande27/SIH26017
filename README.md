@@ -16,12 +16,19 @@ slip.
 | 1 | Backend foundation — TypeScript, Express, config, middleware, `/health` | ✅ done |
 | 2 | Database schema, RLS, seed data, regression suite | ✅ done |
 | 2.2 | Version control, authorization fix, reusable guards, env hardening | ✅ done |
+| 2.3 | Live schema, RLS and auth verification against the real Supabase project | ✅ done |
 | 3 | Business APIs — projects, land, compensation, issues, risk factors, snapshots | ✅ done |
+| 3.1 | All 27 endpoints verified end-to-end against the live database | ✅ done |
 | 4 | FastAPI ML service — rule engine, baseline-first training | ⬜ not started |
 | 5 | Prediction orchestration, SHAP explanations, recommendations | ⬜ not started |
 | 6 | Dashboard APIs, LLM summaries, deployment | ⬜ not started |
 
-**Test coverage today: 275 backend tests + 179 database tests, all passing.**
+**Test coverage today: 334 backend (mocked) + 179 database (PGlite) + 61 live
+E2E + 64 live database checks — all passing.**
+
+The three layers prove different things and are never conflated: the mocked and
+PGlite suites prove logic, and only the live suites prove the real project
+works.
 
 ---
 
@@ -38,7 +45,9 @@ landguard-ai/
 │   │   ├── services/        business logic and persistence
 │   │   ├── validators/      Zod schemas
 │   │   └── utils/           responses, error mapping
-│   └── tests/               275 tests (vitest + supertest)
+│   └── tests/
+│       ├── *.test.ts        334 mocked tests (vitest + supertest)
+│       └── live/            61 live E2E tests — real Supabase, LIVE_E2E=1 only
 │
 ├── database/         PostgreSQL schema, seed, migrations
 │   ├── schema.sql           canonical baseline — 14 tables, 42 RLS policies
@@ -85,8 +94,14 @@ npm run dev              # http://localhost:5000
 | `npm run dev` | Development server with reload |
 | `npm run build` | Compile to `dist/` |
 | `npm start` | Run the compiled server |
-| `npm test` | Run the test suite |
+| `npm test` | Mocked suite — fast, no network, no real data |
 | `npm run type-check` | Type-check source and tests |
+| `npm run audit:supabase` | Live connection + auth audit against the real project |
+| `npm run verify:live` | Live schema, constraint, trigger and RLS verification |
+| `npm run test:live` | **Writes to the real database.** All 27 endpoints end-to-end |
+
+> The live scripts act on the real Supabase project. `test:live` refuses to run
+> without `LIVE_E2E=1` and removes every fixture it creates.
 
 ### 3. Verify
 

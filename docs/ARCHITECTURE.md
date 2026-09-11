@@ -339,6 +339,43 @@ NULL) *before* drawing any conclusion from what it can see, and refuses to run
 the anonymous assertions otherwise. A test that fails in the direction of
 "looks like a security hole" is the worst way to be wrong.
 
+### Live API verification (Phase 3, 2026-09-11)
+
+`npm run test:live` (`backend/tests/live/api.live.test.ts`) exercises all 27
+endpoints against the real project over real HTTP with real ES256 sessions:
+**61 tests, 0 failures**. It is excluded from `npm test` and refuses to run
+without `LIVE_E2E=1`; every fixture is removed in `afterAll`.
+
+#### Why these assertions carry the weight
+
+Every service queries through `supabaseAdmin`, which **bypasses RLS**. For API
+traffic the policies verified in Phase 2.3 are therefore *not* what protects
+these routes — `requireProjectAccess` is, and a gap there has no backstop.
+That is what the live role matrix actually tests.
+
+The service-role client is used deliberately and in exactly three places:
+
+| Use | Why privileged access is required |
+|---|---|
+| `profile.service.ts` | Resolves the caller's role before any authorization decision exists. Using the anon client would need the caller's token, creating a chicken-and-egg with the policy that decides whether they may read their own profile. |
+| `authorization.service.ts` | Answers "may this user reach this project?" — it must see assignments the caller cannot. |
+| Business services | The backend *is* the authorization layer for API traffic; RLS protects the direct-from-client path instead. |
+
+`health.service.ts` is the one service that uses the RLS-respecting client.
+
+#### A real bug the mocked suite could not find
+
+`GET /api/projects/not-a-uuid` returned **503**. A non-UUID compared against a
+`uuid` column raises SQLSTATE `22P02`, which `translateDbError` had no case for,
+so it fell through to "database unavailable". Wrong twice: it tells operators
+there is an outage when there is not, and invites the client to retry a request
+that can never succeed. The in-memory fake returned `null` for unknown ids, so
+no unit test could reach the code path.
+
+Fixed at two layers — `requireProjectAccess` rejects a malformed id with 400
+before any query, and `translateDbError` maps `22P02` / `22007` / `22003` to 400
+as defence in depth — with regression tests added to the mocked suite.
+
 ### Credential boundaries
 
 | Secret | Frontend | Backend | ML service |
