@@ -294,6 +294,51 @@ Algorithms are pinned per mode (`HS256` alone, or `ES256`/`RS256` alone) and
 the two modes never share key material, which forecloses algorithm confusion:
 a JWKS public key is never a candidate HMAC secret.
 
+### Live database verification (Phase 2.3, 2026-09-11)
+
+`npm run verify:live` (`backend/scripts/verify-live-db.ts`) verifies the
+deployed schema against the real project: **52 checks, 0 failures**.
+
+Everything is verified **behaviourally**, not by catalog introspection.
+PostgREST exposes only the `public` schema, so `pg_policies`, `pg_trigger` and
+`pg_indexes` are unreachable — which is a better constraint than it sounds. A
+row in `pg_policies` proves a policy was created, not that it does anything; a
+VIEWER being denied an UPDATE proves the policy works.
+
+| Group | Verified |
+|---|---|
+| Structure | 14 tables, 3 RLS helper functions callable and non-recursive |
+| Generated columns | computed, recomputed on input change, unspoofable (428C9) even with the secret key |
+| Constraints | 7 violations rejected — CHECK, FK, UNIQUE, composite FK, prediction status/result rule |
+| Triggers | `updated_at` fires; `on_auth_user_created` provisions VIEWER |
+| RLS | anonymous sees nothing; role matrix enforced; OFFICER scoped to assignments |
+| Escalation | self-promotion, cross-user role edits and vocabulary writes all refused |
+
+> **RLS evidence comes only from publishable-key clients** carrying real ES256
+> sessions. The service-role client bypasses RLS by design and is used solely
+> to seed and tear down fixtures — never as proof that a policy works.
+
+Two things this verification does **not** cover, stated rather than implied:
+
+- **Indexes.** Not listable through PostgREST. They are verified against real
+  PostgreSQL in `database/tests/schema.test.ts`; confirm on the live project
+  with `SELECT indexname FROM pg_indexes WHERE schemaname='public';`
+- **NUMERIC serialisation.** Reported on every run rather than asserted — see
+  `docs/DATABASE.md` §5.
+
+#### A trap worth remembering
+
+The first run reported an RLS leak: an "anonymous" client could read projects.
+It was the test that was wrong. `supabase-js` keeps a session on the client
+instance even with `persistSession: false`, and the same client object had been
+used to sign test users in. The tell was that "anonymous" saw exactly **one**
+profile row — which is what a VIEWER sees, not an anonymous caller.
+
+The script now proves the client is unauthenticated (`current_app_role()` is
+NULL) *before* drawing any conclusion from what it can see, and refuses to run
+the anonymous assertions otherwise. A test that fails in the direction of
+"looks like a security hole" is the worst way to be wrong.
+
 ### Credential boundaries
 
 | Secret | Frontend | Backend | ML service |

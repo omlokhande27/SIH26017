@@ -372,9 +372,34 @@ error across sums; for compensation figures that is unacceptable.
 - **Day counts:** `NUMERIC(10, 2)` — fractional days are permitted because model
   output is continuous.
 
-In JavaScript, `NUMERIC` arrives from `@supabase/supabase-js` as a **string**,
-because IEEE-754 doubles cannot hold every NUMERIC value. Do not coerce money to
-`Number` for arithmetic. Use a decimal library, or do the arithmetic in SQL.
+### How NUMERIC actually arrives in JavaScript
+
+> **Corrected 2026-09-11 after live verification.** This section previously
+> asserted that `NUMERIC` arrives from `@supabase/supabase-js` as a *string*.
+> Tested against the real project, it does not: PostgREST serialises `NUMERIC`
+> as a **JSON number**, so the client hands back a JavaScript `number`.
+
+The values are correct, but the type has a precision ceiling the column does
+not. A JS number is an IEEE-754 double and holds integers exactly only up to
+2^53 (≈ 9.0 × 10¹⁵). `NUMERIC(18,2)` permits values up to ≈ 1.0 × 10¹⁶, so the
+top of the declared range is not exactly representable.
+
+**What this means in practice**
+
+- Nothing is currently wrong. No code in this repository performs arithmetic on
+  money read back from the database — derived values are `GENERATED` columns
+  computed by PostgreSQL, and the backend copies them through untouched. That
+  design decision, made for a different reason, happens to sidestep this
+  entirely.
+- **Do not start summing money in JavaScript.** Aggregate in SQL, or parse the
+  value into a decimal library at the boundary. A total assembled by adding JS
+  numbers is exactly the failure mode `NUMERIC` exists to prevent.
+- Writes are unaffected: the API accepts decimal **strings** and passes them
+  through, so no precision is lost on the way in. The asymmetry — strings in,
+  numbers out — is worth knowing before writing a round-trip test.
+
+Verified by `backend/scripts/verify-live-db.ts`, which reports the observed
+serialisation on every run rather than assuming it.
 
 ---
 

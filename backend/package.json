@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "type-check:build": "tsc --noEmit",
-    "audit:supabase": "ts-node-dev --transpile-only --respawn=false scripts/supabase-audit.ts"
+    "audit:supabase": "ts-node-dev --transpile-only --respawn=false scripts/supabase-audit.ts",
+    "verify:live": "ts-node-dev --transpile-only --respawn=false scripts/verify-live-db.ts"
   },
   "keywords": [],
   "author": "",
