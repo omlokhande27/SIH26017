@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../config/supabase';
 import { ROLES_WITH_GLOBAL_READ, type AppRole } from '../config/roles';
+import { visibleProjectIds } from './authorization.service';
 import { NotFoundError } from '../utils/errors';
 import { translateDbError } from '../utils/db-error';
 import type {
@@ -64,28 +65,9 @@ export interface PaginatedProjects {
   };
 }
 
-/** Project ids an OFFICER may see: explicitly assigned, or authored. */
-async function assignedProjectIds(userId: string): Promise<string[]> {
-  const assignments = await supabaseAdmin
-    .from('project_assignments')
-    .select('project_id')
-    .eq('user_id', userId);
-
-  if (assignments.error) {
-    throw translateDbError(assignments.error, { context: { op: 'assignedProjectIds' } });
-  }
-
-  const authored = await supabaseAdmin.from('projects').select('id').eq('created_by', userId);
-
-  if (authored.error) {
-    throw translateDbError(authored.error, { context: { op: 'authoredProjectIds' } });
-  }
-
-  const ids = new Set<string>();
-  for (const row of assignments.data ?? []) ids.add((row as { project_id: string }).project_id);
-  for (const row of authored.data ?? []) ids.add((row as { id: string }).id);
-  return [...ids];
-}
+// Project scoping lives in authorization.service.ts (`visibleProjectIds`) so
+// the list endpoint and the Phase 6 aggregates share one implementation. Two
+// copies of a visibility rule is how one of them quietly stops matching.
 
 export async function listProjects(
   user: { id: string; role: AppRole },
@@ -111,7 +93,7 @@ export async function listProjects(
 
   // Read scoping — see the note at the top of this file.
   if (!ROLES_WITH_GLOBAL_READ.includes(user.role)) {
-    const visible = await assignedProjectIds(user.id);
+    const visible = (await visibleProjectIds(user)) ?? [];
     // No assignments means no visible projects. Returning early matters:
     // `.in('id', [])` is a query some clients mishandle, and an empty result
     // must never come back as "unfiltered".

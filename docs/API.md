@@ -563,7 +563,172 @@ column exists to keep it.
 
 ---
 
-## 12. Not implemented
+## 12. Dashboard and analytics
+
+Eight endpoints. All read-only; none writes anything.
+
+> ### Scoping is the authorization
+>
+> These endpoints aggregate across the whole table, so there is no project id
+> for `requireProjectAccess` to guard, and the backend queries with the
+> service-role key which **bypasses RLS**. Every service therefore passes
+> `visibleProjectIds(user)` into the SQL: `null` for ADMIN/ANALYST/VIEWER
+> (unrestricted), an explicit list for OFFICER, `[]` for an OFFICER with no
+> assignments. That argument is the only thing standing between an OFFICER and
+> national totals.
+
+> ### Money and areas are strings
+>
+> Every total is aggregated in PostgreSQL as `NUMERIC` and returned as a
+> **string**. PostgREST serialises `NUMERIC` as a JSON number, so summing in
+> JavaScript would accumulate IEEE-754 error across thousands of rows. Do not
+> parse these to `float` for further arithmetic — aggregate in SQL or use a
+> decimal library.
+
+### `GET /api/dashboard/overview` — any authenticated role
+
+```json
+{
+  "overview": {
+    "total_projects": 12, "total_projects_with_assessments": 9,
+    "projects_without_assessments": 3,
+    "low_risk_projects": 3, "medium_risk_projects": 2,
+    "high_risk_projects": 3, "critical_risk_projects": 1,
+    "average_predicted_delay_days": "596.0", "average_risk_score": "54.2",
+    "latest_assessment_count": 9, "incomplete_assessments": 2,
+    "projects_with_pending_compensation": 7, "projects_with_land_disputes": 2,
+    "projects_with_litigation": 3, "projects_with_row_issues": 1,
+    "projects_with_encroachment": 2, "projects_with_land_record_issues": 1,
+    "projects_with_title_issues": 1, "projects_with_forest_clearance_issues": 2,
+    "projects_with_rr_issues": 3, "projects_with_possession_pending": 4,
+    "projects_with_administrative_delay": 2
+  },
+  "disclosure": { "primary_signal": "RULE_ENGINE", "delay_estimate_note": "…", "limitations": [ … ] }
+}
+```
+
+Issue counts come from each project's **latest** snapshot, so a dispute
+resolved last year no longer counts. Assessment counts use each project's
+**latest** prediction.
+
+### `GET /api/dashboard/risk-distribution`
+
+Returns **all four bands, including empty ones** — a chart that drops CRITICAL
+because nothing is currently critical implies the band cannot occur.
+
+```json
+{ "distribution": [ { "risk_level": "LOW", "project_count": 3 }, … ], "total_assessed": 9 }
+```
+
+### `GET /api/dashboard/high-risk-projects`
+
+| Param | Type | Default |
+|---|---|---|
+| `limit` | 1–100 | `10` |
+| `state` | string | — |
+| `risk_level` | `LOW` \| `MEDIUM` \| `HIGH` \| `CRITICAL` | — |
+
+Ranked by the latest assessment's `risk_score`. Each row carries
+`top_triggered_rules` (up to 5) and `top_recommendations` (up to 3), gathered
+with LATERAL subqueries in one query — not N+1.
+
+### `GET /api/analytics/by-state`
+
+Per-state totals, risk distribution, average delay and risk score, average
+acquisition percentage, exact `total_compensation_pending`, and a count of
+projects carrying a major issue.
+
+### `GET /api/analytics/land-acquisition`
+
+Note the **two different averages**, because they answer different questions:
+
+- `average_acquisition_percentage` — mean of per-project percentages; every project counts equally.
+- `overall_acquisition_percentage` — portfolio position; a 900 ha project outweighs a 10 ha one.
+
+Reporting one as the other misleads. Also returns land totals, band counts
+(`projects_below_25_percent` …), affected people, and compensation totals.
+
+### `GET /api/analytics/delay`
+
+Delay and risk-score buckets, `assessments_by_day` (90-day trend),
+`incomplete_assessments`, plus `model_types_in_use` and
+`confidence_levels_in_use` carried straight through from what was stored.
+
+> While `prediction_type` is `BASELINE_MEDIAN`, **every project has the same
+> delay figure** — the historical median. The buckets will show one non-empty
+> bar. That is correct, not a bug: the baseline carries no project-specific
+> signal. The shape is ready for a genuinely predictive model.
+
+### `GET /api/projects/compare?ids=<uuid>,<uuid>`
+
+2–10 projects, one query. Duplicates rejected (not silently deduplicated).
+
+```json
+{ "projects": [ … ], "requested": 3, "returned": 2, "unavailable": ["<uuid>"] }
+```
+
+`unavailable` means "does not exist **or** you cannot see it" — deliberately
+not distinguished, because telling a caller a project exists but is not theirs
+is an enumeration oracle.
+
+`assessment` is `null` for a project never assessed — **null, not zero**: "not
+assessed" is not "assessed as zero risk".
+
+**Errors:** `400` on a malformed UUID, a duplicate, fewer than 2, more than 10,
+or an unknown query parameter.
+
+---
+
+## 13. AI explanation layer (optional)
+
+### `POST /api/projects/:projectId/ai-summary`
+
+Turns an **already-computed** assessment into prose. Project-scoped, so it runs
+behind the same read guard as any project read.
+
+> ### What the LLM may and may not do
+>
+> **May:** rephrase an assessment that already exists.
+>
+> **May not:** compute a risk score, estimate a delay, decide a database value,
+> rank a recommendation, or supply any project fact. Every number in the output
+> was produced by the rule engine or read from the database *before* the model
+> was called. It receives that verified structure and nothing else — no
+> credentials, no tokens, no table access, no ability to query anything.
+
+The system prompt explicitly forbids describing a `BASELINE_MEDIAN` figure as
+an AI or machine-learning prediction, forbids inventing accuracy or confidence
+figures, and requires an incomplete assessment to be flagged as such.
+
+```json
+{
+  "content_type": "AI_GENERATED_EXPLANATION",
+  "summary": "## Executive Summary\n…",
+  "provenance": {
+    "risk_assessment_source": "RULE_ENGINE",
+    "delay_estimate_source": "BASELINE_MEDIAN",
+    "recommendations_source": "RULE_ENGINE",
+    "ai_role": "The AI only rephrased an assessment that was already computed. It produced no number, no risk level and no recommendation.",
+    "ai_provider": "openai", "ai_model": "gpt-4o-mini",
+    "generated_at": "…", "prediction_id": "…"
+  },
+  "facts_provided": { }
+}
+```
+
+`facts_provided` is returned so a reviewer can check the summary against
+exactly what the model was given, rather than taking the prose on trust.
+
+Output is **not persisted**. It is generated text, not a finding.
+
+**Errors:** `503` when `OPENAI_API_KEY` is not configured — every other
+endpoint is unaffected — or when the provider is unreachable or rejects our
+credentials. `429` when the provider rate-limits. `404` when the project has no
+assessment to summarise (nothing is sent to the provider in that case).
+
+---
+
+## 14. Not implemented
 
 No routes exist for any of the following:
 

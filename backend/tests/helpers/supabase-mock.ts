@@ -45,10 +45,17 @@ let idCounter = 0;
 const nextId = (): string =>
   `00000000-0000-4000-8000-${String(++idCounter).padStart(12, '0')}`;
 
+/** A stand-in for a database function, receiving the arguments the caller passed. */
+type RpcHandler = (args: Record<string, unknown>) => unknown;
+
 export class SupabaseMock {
   private tables = new Map<string, Row[]>();
   private tableErrors = new Map<string, { code?: string; message: string }>();
   private generated = new Map<string, Map<string, GeneratedColumn>>();
+  private rpcs = new Map<string, RpcHandler>();
+  private rpcErrors = new Map<string, { code?: string; message: string }>();
+  /** Every rpc call made, so a test can assert on the arguments — notably the scope array. */
+  public rpcCalls: Array<{ fn: string; args: Record<string, unknown> }> = [];
 
   setTable(name: string, rows: Row[]): void {
     this.tables.set(name, rows.map((r) => ({ ...r })));
@@ -83,10 +90,43 @@ export class SupabaseMock {
     this.generated.get(table)!.set(column, compute);
   }
 
+  /**
+   * Register a stand-in for a database function.
+   *
+   * The real aggregation lives in SQL (migration 0005) and is verified against
+   * real PostgreSQL separately. What these tests check is the layer above it:
+   * that the correct function is called, and — the part that matters — that
+   * the caller's project scope is passed. A handler receives the arguments so
+   * a test can assert on `p_project_ids` directly.
+   */
+  setRpc(name: string, handler: RpcHandler): void {
+    this.rpcs.set(name, handler);
+  }
+
+  failRpc(name: string, message = 'rpc failed', code?: string): void {
+    this.rpcErrors.set(name, { message, code });
+  }
+
+  async rpc(name: string, args: Record<string, unknown> = {}) {
+    this.rpcCalls.push({ fn: name, args });
+
+    const failure = this.rpcErrors.get(name);
+    if (failure) return { data: null, error: failure };
+
+    const handler = this.rpcs.get(name);
+    if (!handler) {
+      return { data: null, error: { code: 'PGRST202', message: `function ${name} not found` } };
+    }
+    return { data: handler(args), error: null };
+  }
+
   reset(): void {
     this.tables.clear();
     this.tableErrors.clear();
     this.generated.clear();
+    this.rpcs.clear();
+    this.rpcErrors.clear();
+    this.rpcCalls = [];
   }
 
   private applyGenerated(table: string, row: Row): Row {

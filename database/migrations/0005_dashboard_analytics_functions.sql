@@ -476,4 +476,104 @@ FROM (
 ) ranked;
 $$;
 
+
+-- ---------------------------------------------------------------------------
+-- 7. Project comparison
+-- ---------------------------------------------------------------------------
+-- Side-by-side data for a handful of named projects, in ONE query.
+--
+-- The scope array is applied here as well as to the explicit id list, so an
+-- OFFICER asking to compare a project they cannot see gets it omitted rather
+-- than returned. The API reports which of the requested ids came back, so a
+-- silently shortened list is visible to the caller rather than looking like
+-- the project does not exist.
+CREATE OR REPLACE FUNCTION public.lg_compare_projects(
+  p_ids UUID[],
+  p_project_ids UUID[] DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE sql
+STABLE
+SET search_path = public, pg_temp
+AS $$
+WITH latest AS (
+  SELECT DISTINCT ON (pr.project_id) pr.*
+  FROM public.predictions pr
+  WHERE pr.prediction_status = 'SUCCESS'
+    AND pr.project_id = ANY (p_ids)
+  ORDER BY pr.project_id, pr.created_at DESC
+),
+latest_snapshot AS (
+  SELECT DISTINCT ON (fs.project_id) fs.*
+  FROM public.project_feature_snapshots fs
+  WHERE fs.project_id = ANY (p_ids)
+  ORDER BY fs.project_id, fs.snapshot_date DESC
+)
+SELECT COALESCE(jsonb_agg(row ORDER BY row->>'project_name'), '[]'::jsonb)
+FROM (
+  SELECT jsonb_build_object(
+    'project_id', p.id,
+    'project_name', p.project_name,
+    'project_code', p.project_code,
+    'state', p.state,
+    'district', p.district,
+    'sector', p.sector,
+    'implementing_agency', p.implementing_agency,
+    'project_status', p.project_status,
+
+    -- Current operational position, read from the live tables.
+    'land_required_ha', la.land_required_ha::TEXT,
+    'land_acquired_ha', la.land_acquired_ha::TEXT,
+    'land_acquisition_percentage', la.land_acquisition_percentage::TEXT,
+    'possession_obtained', la.possession_obtained,
+    'affected_families', la.affected_families,
+
+    'compensation_required', c.total_compensation_required::TEXT,
+    'compensation_paid', c.total_compensation_paid::TEXT,
+    'compensation_pending', c.compensation_pending::TEXT,
+    'compensation_pending_percentage', c.compensation_pending_percentage::TEXT,
+    'payment_status', c.payment_status,
+
+    -- Issue flags from the latest snapshot.
+    'issues', jsonb_build_object(
+      'litigation', COALESCE(ls.litigation_flag, FALSE),
+      'land_dispute', COALESCE(ls.land_dispute_flag, FALSE),
+      'title_issue', COALESCE(ls.title_issue_flag, FALSE),
+      'land_record_issue', COALESCE(ls.land_record_issue_flag, FALSE),
+      'row_issue', COALESCE(ls.row_issue, FALSE),
+      'encroachment', COALESCE(ls.encroachment, FALSE),
+      'forest_clearance_pending', COALESCE(ls.forest_clearance_pending, FALSE),
+      'r_and_r_pending', COALESCE(ls.r_and_r_pending, FALSE),
+      'possession_pending', COALESCE(ls.possession_pending, FALSE),
+      'administrative_delay', COALESCE(ls.administrative_delay, FALSE),
+      'court_cases_count', COALESCE(ls.court_cases_count, 0)
+    ),
+
+    -- Latest assessment, or nulls when the project has never been assessed.
+    -- Nulls rather than zeros: "not assessed" is not "assessed as zero risk".
+    'assessment', CASE WHEN l.id IS NULL THEN NULL ELSE jsonb_build_object(
+      'prediction_id', l.id,
+      'risk_level', l.risk_level,
+      'risk_score', l.risk_score,
+      'predicted_delay_days', l.predicted_delay_days,
+      'prediction_type', l.prediction_type,
+      'confidence', l.confidence,
+      'assessment_complete', l.assessment_complete,
+      'rule_coverage_pct', l.rule_coverage_pct,
+      'assessed_at', l.created_at
+    ) END,
+    'has_assessment', (l.id IS NOT NULL),
+    'recommendation_count',
+      (SELECT COUNT(*) FROM public.recommendations WHERE prediction_id = l.id)
+  ) AS row
+  FROM public.projects p
+  LEFT JOIN public.land_acquisition la ON la.project_id = p.id
+  LEFT JOIN public.compensation      c  ON c.project_id  = p.id
+  LEFT JOIN latest                   l  ON l.project_id  = p.id
+  LEFT JOIN latest_snapshot          ls ON ls.project_id = p.id
+  WHERE p.id = ANY (p_ids)
+    AND public.lg_in_scope(p.id, p_project_ids)
+) cmp;
+$$;
+
 COMMIT;

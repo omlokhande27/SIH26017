@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../config/supabase';
+import { translateDbError } from '../utils/db-error';
 import {
   ROLES_WITH_GLOBAL_READ,
   ROLES_WITH_GLOBAL_WRITE,
@@ -55,6 +56,51 @@ export async function isAssignedToProject(
 
   if (created.error) return { ok: false, detail: created.error.message };
   return { ok: true, assigned: Boolean(created.data) };
+}
+
+/**
+ * The set of projects a caller may READ.
+ *
+ * Returns `null` for a caller with global read (ADMIN / ANALYST / VIEWER),
+ * meaning "no restriction" — which is what the SQL aggregation functions in
+ * migration 0005 expect for an unscoped query. An OFFICER gets an explicit
+ * list; an OFFICER with no assignments gets `[]`, which the SQL reads as an
+ * empty set rather than as "everything".
+ *
+ * ######################################################################
+ * # THIS IS THE AUTHORIZATION BOUNDARY FOR EVERY AGGREGATE ENDPOINT.   #
+ * #                                                                    #
+ * # Dashboard and analytics queries span the whole table, so there is  #
+ * # no project id for `requireProjectAccess` to guard. The backend     #
+ * # queries with the service-role key, which bypasses RLS, so nothing  #
+ * # else would stop an OFFICER seeing national totals. Every aggregate #
+ * # call MUST pass the result of this function.                        #
+ * ######################################################################
+ */
+export async function visibleProjectIds(user: {
+  id: string;
+  role: AppRole;
+}): Promise<string[] | null> {
+  if (ROLES_WITH_GLOBAL_READ.includes(user.role)) return null;
+
+  const assignments = await supabaseAdmin
+    .from('project_assignments')
+    .select('project_id')
+    .eq('user_id', user.id);
+
+  if (assignments.error) {
+    throw translateDbError(assignments.error, { context: { op: 'visibleProjectIds' } });
+  }
+
+  const authored = await supabaseAdmin.from('projects').select('id').eq('created_by', user.id);
+  if (authored.error) {
+    throw translateDbError(authored.error, { context: { op: 'visibleProjectIds' } });
+  }
+
+  const ids = new Set<string>();
+  for (const row of assignments.data ?? []) ids.add((row as { project_id: string }).project_id);
+  for (const row of authored.data ?? []) ids.add((row as { id: string }).id);
+  return [...ids];
 }
 
 /** Does the project exist at all? Distinguishes 404 from 403. */
