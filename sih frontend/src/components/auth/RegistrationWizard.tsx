@@ -31,7 +31,7 @@ import type { RegistrationDetails } from '@/api/registration.api';
 import { getPasswordRequirements, passwordMeetsRequirements } from '@/utils/password';
 import type { OfficerLevel } from '@/context/auth-context';
 
-type StepId = 'identity' | 'jurisdiction' | 'assignment' | 'identifier' | 'email' | 'password';
+type StepId = 'identity' | 'jurisdiction' | 'assignment' | 'identifier' | 'email' | 'password' | 'credentials';
 
 interface StepDefinition {
   id: StepId;
@@ -39,10 +39,7 @@ interface StepDefinition {
   caption: string;
 }
 
-const COMMON_TAIL: StepDefinition[] = [
-  { id: 'email', title: 'Email', caption: 'Verify with a one-time code' },
-  { id: 'password', title: 'Password', caption: 'Set account security' },
-];
+const COMMON_TAIL: StepDefinition[] = [{ id: 'credentials', title: 'Credentials', caption: 'Set email and password' }];
 
 function buildSteps(role: UserRole): StepDefinition[] {
   if (role === UserRole.GOVERNMENT_OFFICER) {
@@ -696,7 +693,7 @@ export function RegistrationWizard({ role, roleTitle, onBack, onComplete }: Regi
       )}
 
       {/* ── Password ─────────────────────────────────────────────── */}
-      {step.id === 'password' && (
+      {step.id === 'credentials' && (
         <div className="space-y-2">
           <div>
             <span className="text-sm font-semibold text-slate-700">
@@ -754,13 +751,13 @@ export function RegistrationWizard({ role, roleTitle, onBack, onComplete }: Regi
           Back
         </Button>
         <Button type="submit" isLoading={busy} className="flex-1">
-          {step.id === 'password'
+          {step.id === 'credentials'
             ? `Create ${roleTitle.toLowerCase()} account`
             : `Continue to ${steps[stepIndex + 1]?.title ?? 'next'}`}
         </Button>
       </div>
 
-      {step.id === 'password' && (
+      {step.id === 'credentials' && (
         <p className="text-center text-[11px] leading-5 text-slate-400">
           The account is created in read-only Viewer mode. An administrator verifies your details before enabling{' '}
           {role === UserRole.GOVERNMENT_OFFICER ? 'officer' : role === UserRole.PROJECT_MANAGER ? 'project' : 'extra'}{' '}

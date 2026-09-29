@@ -201,3 +201,29 @@ export async function checkIdentifierAvailability(
     ? { available: false, pending: false, message: `${label} is already registered. Use a different identifier.` }
     : { available: true, pending: false, message: `${label} is not registered yet, so you can create the account.` };
 }
+
+export async function directSignUp(email: string, password: string, details: RegistrationDetails): Promise<{ ok: boolean, message: string }> {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: details.fullName.trim(),
+        department: details.district?.trim() || 'Land Acquisition Department',
+        designation: details.profession?.trim() || null,
+        requested_role: details.requestedRole,
+        requested_role_id: details.officerId?.trim() || details.managerId?.trim() || null,
+        officer_id: details.officerId?.trim() || null,
+        manager_id: details.managerId?.trim() || null,
+        state_code: details.stateCode || null,
+        district: details.district?.trim() || null,
+        profession: details.profession?.trim() || null,
+        officer_level: details.officerLevel || null,
+        assigned_project_id: details.assignedProjectId || null,
+      },
+    },
+  });
+
+  if (error) return { ok: false, message: friendlyEmailError(error) };
+  return { ok: true, message: 'Registration complete' };
+}
