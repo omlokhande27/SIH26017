@@ -1,0 +1,427 @@
+@import "tailwindcss";
+
+/* ================================================================
+   LandGuard AI — Design System Tokens
+   Government + Enterprise + Modern AI
+   ================================================================ */
+
+@theme {
+  /* ── Brand Colors ── */
+  --color-brand-navy: #0F2440;
+  --color-brand-primary: #1B3A5C;
+  --color-brand-secondary: #2A5A8C;
+  --color-brand-accent: #3B82B8;
+  --color-brand-subtle: #E8F0F8;
+
+  /* ── Background ── */
+  --color-bg-app: #F5F6F8;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-elevated: #FFFFFF;
+  --color-bg-muted: #F0F1F4;
+  --color-bg-sidebar: #0F2440;
+  --color-bg-sidebar-hover: #1B3A5C;
+  --color-bg-sidebar-active: #2A5A8C;
+
+  /* ── Text ── */
+  --color-text-primary: #1A1D21;
+  --color-text-secondary: #4A5568;
+  --color-text-muted: #8494A7;
+  --color-text-inverse: #F8F9FA;
+  --color-text-on-brand: #FFFFFF;
+
+  /* ── Borders ── */
+  --color-border-default: #E2E5EA;
+  --color-border-subtle: #EDF0F3;
+  --color-border-strong: #CBD2DA;
+
+  /* ── Risk / Semantic ── */
+  --color-risk-low: #16A34A;
+  --color-risk-low-bg: #F0FDF4;
+  --color-risk-low-border: #BBF7D0;
+  --color-risk-medium: #E97A0A;
+  --color-risk-medium-bg: #FFF7ED;
+  --color-risk-medium-border: #FED7AA;
+  --color-risk-high: #DC2626;
+  --color-risk-high-bg: #FEF2F2;
+  --color-risk-high-border: #FECACA;
+  --color-risk-critical: #7F1D1D;
+  --color-risk-critical-bg: #FEF2F2;
+  --color-risk-critical-border: #F5A3A3;
+
+  --color-success: #16A34A;
+  --color-success-bg: #F0FDF4;
+  --color-warning: #E97A0A;
+  --color-warning-bg: #FFF7ED;
+  --color-error: #DC2626;
+  --color-error-bg: #FEF2F2;
+  --color-info: #2563EB;
+  --color-info-bg: #EFF6FF;
+
+  /* ── Radius ── */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-elevated: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+
+  /* ── Typography ── */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+
+  /* ── Transitions ── */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Layout ── */
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 72px;
+  --topnav-height: 56px;
+}
+
+/* ================================================================
+   Base Styles
+   IMPORTANT: keep base element styles inside @layer base so they
+   never out-prioritize Tailwind utilities in the cascade.
+   (An unlayered `* { margin:0; padding:0 }` silently kills every
+   margin/padding utility in the app.)
+   ================================================================ */
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-bg-app);
+    color: var(--color-text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+}
+
+/* ================================================================
+   Typography Utilities
+   ================================================================ */
+
+.text-page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+
+.text-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-text-primary);
+}
+
+.text-card-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-text-primary);
+}
+
+.text-body {
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.text-caption {
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.text-metric {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.text-metric-sm {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.text-table {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ================================================================
+   Scrollbar Styles
+   ================================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ================================================================
+   Focus Styles (Accessibility)
+   ================================================================ */
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-accent);
+  outline-offset: 2px;
+}
+
+/* ================================================================
+   Animations
+   ================================================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-normal) ease-out both;
+}
+
+.animate-slide-in {
+  animation: slideInRight var(--transition-normal) ease-out both;
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--transition-fast) ease-out both;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-bg-muted) 25%, var(--color-border-subtle) 50%, var(--color-bg-muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ================================================================
+   Dashboard command surface
+   ================================================================ */
+
+.dashboard-hero {
+  isolation: isolate;
+}
+
+.dashboard-grid-overlay {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, black, transparent 90%);
+  opacity: 0.7;
+}
+
+/* ================================================================
+   Landing Hero — Entrance + Status Animations
+   Fast, restrained, professional (200–500ms).
+   ================================================================ */
+
+@keyframes lgRise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Sequential reveal used by hero copy + dashboard elements */
+.lg-rise {
+  animation: lgRise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Subtle green pulse for LIVE / HIGH RISK status dots */
+@keyframes lgPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.75); }
+}
+
+.lg-pulse-dot {
+  animation: lgPulse 2.4s ease-in-out infinite;
+}
+
+/* Very subtle breathing glow around live status badges */
+@keyframes lgBreath {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+  50% { box-shadow: 0 0 10px 0 rgba(22, 163, 74, 0.28); }
+}
+
+.lg-live-badge {
+  animation: lgBreath 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lg-rise,
+  .lg-pulse-dot,
+  .lg-live-badge {
+    animation: none !important;
+  }
+  .lg-rise {
+    opacity: 1;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ================================================================
+   Leaflet Map Integration (Risk Map)
+   ================================================================ */
+
+.leaflet-container {
+  font-family: var(--font-sans);
+  background: var(--color-bg-app);
+}
+
+.leaflet-control-attribution {
+  font-size: 9px;
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--color-text-muted);
+}
+
+.leaflet-control-attribution a {
+  color: var(--color-text-muted);
+}
+
+.india-city-label,
+.india-state-tooltip,
+.india-project-tooltip {
+  border: 0;
+  box-shadow: none;
+  font-family: var(--font-sans);
+}
+
+.india-city-label {
+  padding: 1px 4px;
+  border: 0;
+  background: rgba(255, 255, 255, 0.82);
+  color: #475569;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.india-city-label::before {
+  display: none;
+}
+
+.india-city-label.capital {
+  color: #1b3a5c;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.india-state-tooltip,
+.india-project-tooltip {
+  padding: 5px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: rgba(15, 36, 64, 0.94);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.india-state-tooltip::before,
+.india-project-tooltip::before {
+  border-top-color: rgba(15, 36, 64, 0.94);
+}
+
+.risk-marker-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(15, 36, 64, 0.35);
+  transition: transform 120ms ease;
+}
+
+.risk-marker-dot:hover {
+  transform: scale(1.35);
+}
+
+.risk-popup .leaflet-popup-content-wrapper {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+  padding: 4px;
+}
+
+.risk-popup .leaflet-popup-content {
+  margin: 12px 14px;
+}
+
+.risk-popup .leaflet-popup-tip {
+  box-shadow: none;
+}
