@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ScatterChart, Scatter, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { ScatterPoint } from '@/mock/analytics';
+import type { ScatterPoint } from '@/utils/analytics-helpers';
 
 interface ScatterTooltipProps {
   active?: boolean;

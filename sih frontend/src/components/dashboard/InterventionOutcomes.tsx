@@ -1,6 +1,6 @@
 import { ArrowRight, CheckCircle2, Clock3, LineChart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import type { InterventionOutcome } from '@/mock/executive';
+import type { InterventionOutcome } from '@/utils/executive-helpers';
 import { formatDate } from '@/utils/formatting';
 
 interface InterventionOutcomesProps {

@@ -1,5 +1,5 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import type { RiskBucket } from '@/mock/analytics';
+import type { RiskBucket } from '@/utils/analytics-helpers';
 
 interface DonutTooltipProps {
   active?: boolean;

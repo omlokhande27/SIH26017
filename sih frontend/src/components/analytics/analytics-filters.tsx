@@ -2,7 +2,7 @@ import { ChevronDown } from 'lucide-react';
 import { RiskLevel } from '@/types';
 import type { ProjectSector } from '@/types';
 import { getSectorLabel } from '@/utils/formatting';
-import type { AnalyticsFilters, AnalyticsRange } from '@/mock/analytics';
+import type { AnalyticsFilters, AnalyticsRange } from '@/utils/analytics-helpers';
 
 const RANGE_OPTIONS: Array<{ value: AnalyticsRange; label: string }> = [
   { value: 'ALL', label: 'All time' },

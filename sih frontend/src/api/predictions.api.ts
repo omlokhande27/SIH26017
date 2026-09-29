@@ -1,13 +1,4 @@
-import { apiClient, delay } from './client';
-import { mockProjects } from '../mock/projects';
-import {
-  mockPredictions,
-  findPrediction,
-  getPredictionForProject,
-  runAnalysis,
-  generatePredictionHistory,
-  buildPredictionExplanation,
-} from '../mock/predictions';
+import { apiClient } from './client';
 import type { Prediction, PredictionExplanation, RiskFactor } from '../types';
 import { RiskLevel } from '../types';
 
@@ -25,12 +16,12 @@ function mapAssessmentToPrediction(assessment: any, projectId: string, projectNa
 
   const factors: RiskFactor[] = rules.map((r: any, idx: number) => ({
     id: r.rule_id || `factor-${idx}`,
-    name: r.title || r.rule_id,
+    name: r.title || r.factor || r.rule_id,
     category: r.category || 'Risk Analysis',
     weight: Math.round(r.contribution || 10),
     value: r.contribution || 10,
     impact: 'NEGATIVE',
-    description: r.description || '',
+    description: r.reason || r.description || '',
     contributionScore: r.contribution,
   }));
 
@@ -42,99 +33,84 @@ function mapAssessmentToPrediction(assessment: any, projectId: string, projectNa
     riskLevel: riskLevelMap[ra?.risk_level] || RiskLevel.MEDIUM,
     confidence: p?.confidence === 'HIGH' ? 88 : p?.confidence === 'MEDIUM' ? 72 : 55,
     factors,
-    createdAt: assessment.created_at || new Date().toISOString(),
+    createdAt: assessment.created_at || p?.created_at || new Date().toISOString(),
     modelVersion: p?.model_version || '0.1.0-median_baseline',
     dataOrigin: 'live',
   };
 }
 
 export const predictionsApi = {
-  getPredictions: async (): Promise<Prediction[]> => {
-    return mockPredictions;
-  },
-
   getPredictionByProjectId: async (projectId: string): Promise<Prediction | null> => {
     try {
+      const projRes: any = await apiClient.get(`/projects/${projectId}`);
+      const projectName = projRes?.data?.project?.project_name || 'Project';
+
       const res: any = await apiClient.get(`/projects/${projectId}/predictions/latest`);
-      if (res && res.success && res.data?.prediction) {
-        const p = res.data.prediction;
-        const project = mockProjects.find((m) => m.id === projectId);
-        return {
-          id: p.id,
-          projectId,
-          projectName: project?.name || 'Project',
-          predictedDelay: Number(p.predicted_delay_days ?? 0),
-          riskLevel: (p.risk_level as RiskLevel) || RiskLevel.MEDIUM,
-          factors: [],
-          createdAt: p.created_at,
-          modelVersion: p.model_version || '0.1.0',
-          dataOrigin: 'live',
-        };
+      if (res && res.success && res.data) {
+         // Some endpoints return 'prediction', some return the full assessment at data.
+         const assessment = res.data.prediction ? res.data : { prediction: res.data };
+         return mapAssessmentToPrediction(assessment, projectId, projectName);
       }
-    } catch {
-      // fallback
+    } catch (err) {
+      console.error('Backend getPredictionByProjectId failed:', err);
+      throw err;
     }
-    const project = mockProjects.find((p) => p.id === projectId);
-    if (!project) return null;
-    return getPredictionForProject(project);
+    return null;
   },
 
   generatePrediction: async (projectId: string): Promise<Prediction | null> => {
-    const project = mockProjects.find((p) => p.id === projectId);
     try {
+      const projRes: any = await apiClient.get(`/projects/${projectId}`);
+      const projectName = projRes?.data?.project?.project_name || 'Project';
+
       const res: any = await apiClient.post(`/projects/${projectId}/predictions`);
       if (res && res.success && res.data) {
-        return mapAssessmentToPrediction(res.data, projectId, project?.name || 'Project');
+        return mapAssessmentToPrediction(res.data, projectId, projectName);
       }
     } catch (err) {
-      console.warn('Backend prediction error, running local rule engine:', err);
+      console.error('Backend generatePrediction error:', err);
+      throw err;
     }
-
-    await delay(1200);
-    if (!project) return null;
-    return runAnalysis(project);
+    return null;
   },
 
-  getPredictionExplanation: async (predictionId: string): Promise<PredictionExplanation> => {
-    const prediction = findPrediction(predictionId);
-    if (prediction?.projectId) {
-      try {
-        const res: any = await apiClient.post(`/projects/${prediction.projectId}/ai-summary`);
-        if (res && res.success && res.data?.summary) {
-          return {
-            predictionId,
-            summary: res.data.summary,
-            topFactors: prediction.factors.slice(0, 3),
-            historicalComparison: 'Analyzed against regional infrastructure baseline.',
-            recommendations: prediction.factors.map((f) => `Mitigate ${f.name}`),
-          };
-        }
-      } catch {
-        // fallback to built-in explanation
+  getPredictionExplanation: async (projectId: string, predictionId: string): Promise<PredictionExplanation> => {
+    try {
+      const res: any = await apiClient.post(`/projects/${projectId}/ai-summary`);
+      if (res && res.success && res.data?.summary) {
+        return {
+          predictionId,
+          summary: res.data.summary,
+          topFactors: [], // Will be hydrated by UI
+          historicalComparison: 'Analyzed against regional infrastructure baseline.',
+          recommendations: [], // Replaced by real recommendations endpoint usually
+        };
       }
+    } catch (err) {
+      console.error('AI Summary failed:', err);
     }
 
-    await delay(300);
-    return prediction
-      ? buildPredictionExplanation(prediction)
-      : {
-          predictionId,
-          summary: 'AI analysis indicates potential delays due to a combination of acquisition factors.',
-          topFactors: [],
-          historicalComparison: 'Typical for similar projects.',
-          recommendations: ['Monitor closely.'],
-        };
+    // Fallback explanation if OpenAI is not configured or throws an error
+    return {
+        predictionId,
+        summary: 'AI analysis indicates potential delays due to a combination of acquisition factors.',
+        topFactors: [],
+        historicalComparison: 'Typical for similar projects.',
+        recommendations: ['Monitor closely.'],
+      };
   },
 
   getPredictionHistory: async (projectId: string): Promise<Prediction[]> => {
     try {
       const res: any = await apiClient.get(`/projects/${projectId}/predictions`);
-      if (res && res.success && Array.isArray(res.data?.predictions) && res.data.predictions.length > 0) {
-        const project = mockProjects.find((p) => p.id === projectId);
+      if (res && res.success && Array.isArray(res.data?.predictions)) {
+        const projRes: any = await apiClient.get(`/projects/${projectId}`);
+        const projectName = projRes?.data?.project?.project_name || 'Project';
+
         return res.data.predictions.map((p: any) => ({
           id: p.id,
           projectId,
-          projectName: project?.name || 'Project',
+          projectName: projectName,
           predictedDelay: Number(p.predicted_delay_days ?? 0),
           riskLevel: (p.risk_level as RiskLevel) || RiskLevel.MEDIUM,
           factors: [],
@@ -143,11 +119,10 @@ export const predictionsApi = {
           dataOrigin: 'live',
         }));
       }
-    } catch {
-      // fallback
+    } catch (err) {
+      console.error('Backend getPredictionHistory failed:', err);
+      throw err;
     }
-    const project = mockProjects.find((p) => p.id === projectId);
-    if (!project) return [];
-    return generatePredictionHistory(project);
+    return [];
   },
 };

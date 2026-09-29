@@ -1,5 +1,5 @@
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { FactorScore } from '@/mock/analytics';
+import type { FactorScore } from '@/utils/analytics-helpers';
 
 interface FactorTooltipProps {
   active?: boolean;

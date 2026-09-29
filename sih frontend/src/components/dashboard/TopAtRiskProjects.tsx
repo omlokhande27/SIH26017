@@ -1,7 +1,7 @@
 import { ArrowRight, TriangleAlert } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { RiskBadge } from '@/components/ui/risk-badge';
-import type { ExecHighRiskProject } from '@/mock/executive';
+import type { ExecHighRiskProject } from '@/utils/executive-helpers';
 
 interface TopAtRiskProjectsProps {
   projects: ExecHighRiskProject[];

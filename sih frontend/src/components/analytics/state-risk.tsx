@@ -1,5 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { StateRiskPoint } from '@/mock/analytics';
+import type { StateRiskPoint } from '@/utils/analytics-helpers';
 
 interface StateTooltipProps {
   active?: boolean;

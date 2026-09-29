@@ -33,7 +33,7 @@ export default function PredictionDetail() {
 
   const { data: explanation, isLoading: explanationLoading } = useQuery({
     queryKey: ['prediction', 'explanation', latest?.id ?? ''],
-    queryFn: () => predictionsApi.getPredictionExplanation(latest?.id ?? ''),
+    queryFn: () => predictionsApi.getPredictionExplanation(projectId, latest?.id ?? ''),
     enabled: Boolean(latest),
   });
 

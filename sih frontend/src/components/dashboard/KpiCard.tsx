@@ -1,6 +1,6 @@
 import { Building2, AlertTriangle, Clock, ClipboardCheck, ArrowUpRight, ArrowDownRight, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import type { ExecKpi } from '@/mock/executive';
+import type { ExecKpi } from '@/utils/executive-helpers';
 import { cn } from '@/lib/utils';
 
 interface KpiCardProps {

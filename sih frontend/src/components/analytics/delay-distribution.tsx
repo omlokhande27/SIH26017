@@ -1,5 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { DelayBucket } from '@/mock/analytics';
+import type { DelayBucket } from '@/utils/analytics-helpers';
 
 interface BucketTooltipProps {
   active?: boolean;

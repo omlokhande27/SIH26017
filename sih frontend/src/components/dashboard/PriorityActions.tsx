@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router';
 import { ArrowRight, CircleDot } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import type { PriorityActionItem } from '@/mock/executive';
+import type { PriorityActionItem } from '@/utils/executive-helpers';
 import { RiskLevel, ActionStatus } from '@/types';
 import { cn } from '@/lib/utils';
 

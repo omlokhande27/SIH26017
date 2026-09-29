@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router';
 import { Card, CardContent } from '@/components/ui/card';
-import type { QuickActionDef } from '@/mock/executive';
+import type { QuickActionDef } from '@/utils/executive-helpers';
 
 interface QuickActionsProps {
   visibleActions: QuickActionDef[];

@@ -1,3 +1,5 @@
+import { useQuery } from '@tanstack/react-query';
+import { projectsApi } from '@/api/projects.api';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { History, IndianRupee, Timer, TrendingDown, X } from 'lucide-react';
@@ -21,7 +23,8 @@ export function ComparablesPopover({ project, trigger, align = 'right' }: Compar
   const anchorRef = useRef<HTMLSpanElement>(null);
   const navigate = useNavigate();
 
-  const comparables: ComparableProject[] = open ? buildComparableProjects(project) : [];
+  const { data: allProjects = [] } = useQuery({ queryKey: ['projects'], queryFn: projectsApi.getProjects, enabled: open });
+  const comparables: ComparableProject[] = open ? buildComparableProjects(project, allProjects) : [];
 
   useEffect(() => {
     if (!open) return;

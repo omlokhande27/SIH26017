@@ -1,5 +1,5 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import type { RiskBucket } from '@/mock/executive';
+import type { RiskBucket } from '@/utils/executive-helpers';
 
 interface RiskDonutProps {
   buckets: RiskBucket[];

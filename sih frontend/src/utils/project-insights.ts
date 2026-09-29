@@ -1,5 +1,4 @@
 import { buildFactorsForProject } from './prediction-helpers';
-import { mockProjects } from '@/mock/projects';
 import type { Project, ProjectIssue, RiskLevel } from '@/types';
 import { ProjectStatus } from '@/types';
 
@@ -198,15 +197,15 @@ export function findModelConfidence(project: Project): number | null {
  * happened on them: money disbursed, delay recorded, and planned duration.
  * Comparables are drawn from the real project register, never generated.
  */
-export function buildComparableProjects(project: Project, limit = 4): ComparableProject[] {
-  const sameSector = mockProjects.filter(
+export function buildComparableProjects(project: Project, allProjects: Project[], limit = 4): ComparableProject[] {
+  const sameSector = allProjects.filter(
     (candidate) =>
       candidate.id !== project.id &&
       candidate.sector === project.sector &&
       candidate.riskLevel === project.riskLevel,
   );
 
-  const sameStateDifferentSector = mockProjects.filter(
+  const sameStateDifferentSector = allProjects.filter(
     (candidate) =>
       candidate.id !== project.id &&
       candidate.state === project.state &&

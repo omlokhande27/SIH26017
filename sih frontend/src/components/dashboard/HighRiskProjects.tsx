@@ -3,7 +3,7 @@ import { AlertTriangle, ArrowRight, MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { RiskBadge } from '@/components/ui/risk-badge';
 import { EmptyState } from '@/components/ui/empty-state';
-import type { ExecHighRiskProject } from '@/mock/executive';
+import type { ExecHighRiskProject } from '@/utils/executive-helpers';
 
 interface HighRiskProjectsProps {
   projects: ExecHighRiskProject[];

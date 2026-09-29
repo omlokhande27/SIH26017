@@ -1,5 +1,5 @@
 import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { TrendPoint } from '@/mock/analytics';
+import type { TrendPoint } from '@/utils/analytics-helpers';
 
 interface TrendTooltipProps {
   active?: boolean;

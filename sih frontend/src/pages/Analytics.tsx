@@ -14,7 +14,7 @@ import {
   projectMatchesAnalyticsFilters,
   computeAnalytics,
   type AnalyticsFilters,
-} from '@/mock/analytics';
+} from '@/utils/analytics-helpers';
 import { useQuery } from '@tanstack/react-query';
 import { projectsApi } from '@/api/projects.api';
 

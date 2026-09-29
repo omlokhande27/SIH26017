@@ -1,5 +1,5 @@
 import { Activity, Info, Sparkles, TrendingUp } from 'lucide-react';
-import type { AnalyticsInsight, InsightTone } from '@/mock/analytics';
+import type { AnalyticsInsight, InsightTone } from '@/utils/analytics-helpers';
 import { cn } from '@/lib/utils';
 
 const toneStyles: Record<InsightTone, { icon: typeof Info; ring: string; iconColor: string }> = {
