@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { projectsApi } from '@/api/projects.api';
 import { ManagerProjectUpdate } from '@/components/projects/manager-project-update';
 import { describeEditDenial } from '@/utils/permissions';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Skeleton } from '@/components/ui/loading-skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { useAuth } from '@/context/useAuth';
@@ -50,6 +50,7 @@ function numberValue(value: string) {
 }
 
 export default function EditProject() {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { id = '' } = useParams<{ id: string }>();
   const { currentUser, editScopeFor } = useAuth();
@@ -246,6 +247,12 @@ export default function EditProject() {
         description: form.description,
       };
       await projectsApi.updateProject(project.id, changes);
+      // Invalidate ALL relevant caches so the UI shows the newly generated prediction instantly
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project', project.id] });
+      queryClient.invalidateQueries({ queryKey: ['prediction'] });
+      queryClient.invalidateQueries({ queryKey: ['executive-dashboard'] });
+      
       navigate(`/projects/${project.id}`, { replace: true });
     } catch {
       setError('The project could not be updated. Please review the values and try again.');

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useBlocker, useNavigate } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
+//  'react-router';
 import {
   ArrowLeft, AlertCircle, AlertOctagon, Building2, Check, CheckCircle2, ChevronLeft, ChevronRight,
   Clock, Files, Gavel, Hand, IndianRupee, Map, Route, Save, Scale, Trees, Users, FileWarning,
@@ -571,6 +573,7 @@ function ReviewSummary({ draft }: { draft: DraftState }) {
 
 export default function AddProject() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [draft, setDraft] = useState<DraftState>(() => loadDraft() ?? initialDraft);
   const [stepIndex, setStepIndex] = useState(0);
   const [errors, setErrors] = useState<Errors>({});
@@ -664,6 +667,11 @@ export default function AddProject() {
     try {
       const project = await projectsApi.createProject(toCreateInput(draft));
       localStorage.removeItem(DRAFT_KEY);
+      
+      // Invalidate relevant caches so the UI shows the new project and metrics instantly
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['executive-dashboard'] });
+      
       setCreatedProject(project);
       navigateTimer.current = setTimeout(() => navigate(`/projects/${project.id}`), 2400);
     } catch {
