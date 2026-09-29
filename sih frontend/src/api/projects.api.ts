@@ -341,29 +341,54 @@ export const projectsApi = {
 
       // Update land acquisition if needed
       if (changes.landRequired !== undefined || changes.landAcquired !== undefined) {
-        try {
-          await apiClient.patch(`/projects/${id}/land-acquisition`, {
+        const payload = {
             ...(changes.landRequired !== undefined && { land_required_ha: String(changes.landRequired) }),
             ...(changes.landAcquired !== undefined && { land_acquired_ha: String(changes.landAcquired) }),
-          });
+            ...(changes.affectedLandowners !== undefined && { affected_landowners: changes.affectedLandowners }),
+            ...(changes.affectedFamilies !== undefined && { affected_families: changes.affectedFamilies }),
+        };
+        try {
+          await apiClient.patch(`/projects/${id}/land-acquisition`, payload);
         } catch (e) {
-          console.warn('Land acquisition patch ignored or not found:', e);
+          // If 404, it might not exist yet. Try POST.
+          try {
+            await apiClient.post(`/projects/${id}/land-acquisition`, {
+              land_required_ha: payload.land_required_ha || '0',
+              land_acquired_ha: payload.land_acquired_ha || '0',
+              land_parcels_total: payload.affected_landowners || 10,
+              land_parcels_acquired: 0,
+              affected_landowners: payload.affected_landowners || 0,
+              affected_families: payload.affected_families || 0,
+              possession_obtained: false
+            });
+          } catch (postE) {
+             console.warn('Land acquisition upsert failed:', postE);
+          }
         }
       }
 
       // Update compensation if needed
       if (changes.compensationRequired !== undefined || changes.compensationPaid !== undefined) {
-        try {
-          await apiClient.patch(`/projects/${id}/compensation`, {
+        const payload = {
             ...(changes.compensationRequired !== undefined && {
               total_compensation_required: String(changes.compensationRequired * 10000000),
             }),
             ...(changes.compensationPaid !== undefined && {
               total_compensation_paid: String(changes.compensationPaid * 10000000),
             }),
-          });
+        };
+        try {
+          await apiClient.patch(`/projects/${id}/compensation`, payload);
         } catch (e) {
-          console.warn('Compensation patch ignored or not found:', e);
+          try {
+            await apiClient.post(`/projects/${id}/compensation`, {
+              ...payload,
+              total_compensation_required: payload.total_compensation_required || '0',
+              total_compensation_paid: payload.total_compensation_paid || '0'
+            });
+          } catch (postE) {
+            console.warn('Compensation upsert failed:', postE);
+          }
         }
       }
 
