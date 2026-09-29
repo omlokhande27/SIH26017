@@ -370,7 +370,15 @@ export const projectsApi = {
       
       // Auto-trigger an AI prediction so the delay days reflect the newest data immediately
       try {
-        await apiClient.post(`/projects/${id}/predictions`);
+        // 1. Force a completely new snapshot based on the edits we just made
+        const snapRes: any = await apiClient.post(`/projects/${id}/snapshots`);
+        
+        // 2. Feed that exact new snapshot into the AI Prediction Engine
+        if (snapRes?.data?.snapshot?.id) {
+          await apiClient.post(`/projects/${id}/predictions`, { snapshot_id: snapRes.data.snapshot.id });
+        } else {
+          await apiClient.post(`/projects/${id}/predictions`);
+        }
       } catch (err) {
         console.warn('Failed to auto-update AI predictions on save', err);
       }
