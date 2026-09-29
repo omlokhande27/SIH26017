@@ -124,7 +124,7 @@ function mapBackendFullViewToProject(view: any): Project {
     compensationRequired: round1(compRequired),
     compensationPaid: round1(compPaid),
     compensationPending: round1(compPending),
-    predictedDelay: null,
+    predictedDelay: view.prediction ? Number(view.prediction.predicted_delay_days || 0) : null,
     lastPredictionDate: latestSnap?.snapshot_date || null,
     projectManager: 'Assigned Officer',
     startDate: p.planned_start_date || p.created_at,
@@ -156,7 +156,14 @@ export const projectsApi = {
             try {
               const fullRes: any = await apiClient.get(`/projects/${p.id}/full`);
               if (fullRes && fullRes.success && fullRes.data) {
-                return mapBackendFullViewToProject(fullRes.data);
+                const proj = fullRes.data;
+                try {
+                  const predRes: any = await apiClient.get(`/projects/${p.id}/predictions/latest`);
+                  if (predRes && predRes.success && predRes.data && predRes.data.prediction) {
+                    proj.prediction = predRes.data.prediction;
+                  }
+                } catch { /* ignore */ }
+                return mapBackendFullViewToProject(proj);
               }
             } catch {
               // fallback to base project mapping
@@ -177,7 +184,14 @@ export const projectsApi = {
     try {
       const res: any = await apiClient.get(`/projects/${id}/full`);
       if (res && res.success && res.data) {
-        return mapBackendFullViewToProject(res.data);
+        const proj = res.data;
+        try {
+          const predRes: any = await apiClient.get(`/projects/${id}/predictions/latest`);
+          if (predRes && predRes.success && predRes.data && predRes.data.prediction) {
+            proj.prediction = predRes.data.prediction;
+          }
+        } catch { /* ignore */ }
+        return mapBackendFullViewToProject(proj);
       }
       throw new Error(`Project ${id} not found or invalid response`);
     } catch (err) {
