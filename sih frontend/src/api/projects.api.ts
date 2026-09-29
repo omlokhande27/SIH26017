@@ -367,6 +367,14 @@ export const projectsApi = {
         }
       }
 
+      
+      // Auto-trigger an AI prediction so the delay days reflect the newest data immediately
+      try {
+        await apiClient.post(`/projects/${id}/predictions`);
+      } catch (err) {
+        console.warn('Failed to auto-update AI predictions on save', err);
+      }
+
       return await projectsApi.getProjectById(id);
     } catch (err) {
       console.error(`Backend updateProject for ${id} failed:`, err);
