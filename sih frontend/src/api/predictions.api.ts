@@ -77,20 +77,19 @@ export const predictionsApi = {
   getPredictionExplanation: async (projectId: string, predictionId: string): Promise<PredictionExplanation> => {
     try {
       const res: any = await apiClient.post(`/projects/${projectId}/ai-summary`);
-      if (res && res.success && res.data?.summary) {
+      if (res && res.success && res.data && res.data.summary) {
         return {
           predictionId,
           summary: res.data.summary,
-          topFactors: [], // Will be hydrated by UI
-          historicalComparison: 'Analyzed against regional infrastructure baseline.',
-          recommendations: [], // Replaced by real recommendations endpoint usually
+          topFactors: [], // Hydrated by UI
+          historicalComparison: res.data.historicalComparison || 'Analyzed against regional infrastructure baseline.',
+          recommendations: res.data.recommendations || [],
         };
       }
     } catch (err) {
       console.error('AI Summary failed:', err);
     }
 
-    // Fallback explanation if OpenAI is not configured or throws an error
     return {
         predictionId,
         summary: 'AI analysis indicates potential delays due to a combination of acquisition factors.',
