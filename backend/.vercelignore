@@ -1,0 +1,8 @@
+node_modules
+.venv
+*.joblib
+*.csv
+*.json.bak
+dist
+__pycache__
+.pytest_cache
