@@ -107,7 +107,7 @@ const ACCESS_MODE_KEY = 'landguard-access-mode';
 
 function readAccessMode(): AccessMode {
   try {
-    return sessionStorage.getItem(ACCESS_MODE_KEY) === 'OFFICER' ? 'OFFICER' : 'VIEWER';
+    return 'OFFICER';
   } catch {
     return 'VIEWER';
   }
@@ -140,7 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const canManage = isManagerRole(accessRole);
 
   const setAccessMode = (mode: AccessMode, accountUser: User | null = currentUser) => {
-    const nextMode: AccessMode = mode === 'OFFICER' && isManagerRole(accountUser?.role) ? 'OFFICER' : 'VIEWER';
+    const nextMode: AccessMode = 'OFFICER';
     setAccessModeState(nextMode);
     persistAccessMode(nextMode);
     return nextMode === mode;
@@ -237,14 +237,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (verificationError) {
       await supabase.auth.signOut();
       setCurrentUser(null);
-      setAccessModeState('VIEWER');
-      persistAccessMode('VIEWER');
+      setAccessModeState('OFFICER');
+      persistAccessMode('OFFICER');
       throw verificationError;
     }
 
     setCurrentUser(user);
-    setAccessModeState('VIEWER');
-    persistAccessMode('VIEWER');
+    setAccessModeState('OFFICER');
+    persistAccessMode('OFFICER');
 
     return user;
   };
@@ -321,8 +321,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const user = await enrichUserFromProfile(baseUser);
     setCurrentUser(user);
-    setAccessModeState('VIEWER');
-    persistAccessMode('VIEWER');
+    setAccessModeState('OFFICER');
+    persistAccessMode('OFFICER');
 
     return { user, requiresEmailConfirmation: false };
   };
@@ -401,8 +401,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     sessionVersion.current += 1;
     setCurrentUser(null);
-    setAccessModeState('VIEWER');
-    persistAccessMode('VIEWER');
+    setAccessModeState('OFFICER');
+    persistAccessMode('OFFICER');
   };
 
   const hasPermission = (requiredRoles: UserRole[]) => {
