@@ -3,7 +3,7 @@ import { NotFoundError, UnprocessableError } from '../utils/errors';
 import { translateDbError } from '../utils/db-error';
 import * as mlClient from './ml-service.client';
 import type { PredictionResult, TriggeredRule } from './ml-service.client';
-import { createSnapshot, listSnapshots, getSnapshot, type SnapshotRow } from './snapshot.service';
+import { createSnapshot, getSnapshot, type SnapshotRow } from './snapshot.service';
 
 /**
  * Prediction orchestration — the Phase 5 workflow.
