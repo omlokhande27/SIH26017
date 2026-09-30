@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT / "data" / "combined5_land_acquisition.csv"
+DATA = ROOT / "data" / "mapped_user_data.csv"
 OUT = ROOT / "artifacts" / "dataset_audit.json"
 
 TARGET = "delay_days_target"

@@ -1,64 +1,67 @@
 {
-  "model_version": "0.1.0-median_baseline",
-  "model_type": "median_baseline",
-  "trained_at": "2026-09-11T16:45:59.923809+00:00",
-  "training_rows": 130,
-  "distinct_feature_vectors": 22,
+  "model_version": "0.1.0-random_forest",
+  "model_type": "random_forest",
+  "trained_at": "2026-09-29T18:05:19.365074+00:00",
+  "training_rows": 422,
+  "distinct_feature_vectors": 403,
   "features": [
-    "compensation_pending_rs",
-    "court_cases_count",
-    "affected_landowners_count",
-    "R&R_pending_count",
-    "award_delay_days",
-    "land_parcels_count",
+    "land_required_ha",
+    "land_acquired_ha",
+    "acquisition_percentage",
     "compensation_pending",
-    "court_case",
-    "possession_obtained",
-    "government_coordination_delay",
-    "R&R_required"
+    "compensation_pending_percentage",
+    "affected_landowners",
+    "affected_families",
+    "court_cases_count",
+    "litigation_flag",
+    "land_dispute_flag",
+    "r_and_r_required",
+    "r_and_r_pending",
+    "forest_clearance_pending",
+    "possession_pending"
   ],
   "target": "delay_days_target",
   "cv_strategy": "GroupKFold over identical feature vectors",
   "metrics": {
-    "mae": 306.78,
-    "rmse": 374.25,
-    "r2": -0.0092,
+    "mae": 296.96,
+    "rmse": 539.87,
+    "r2": 0.1437,
     "folds": 5
   },
   "baseline_metrics": {
-    "mae": 306.78,
-    "rmse": 374.25,
-    "r2": -0.0092,
+    "mae": 386.59,
+    "rmse": 632.11,
+    "r2": -0.0374,
     "folds": 5
   },
   "all_results": {
     "median_baseline": {
-      "mae": 306.78,
-      "rmse": 374.25,
-      "r2": -0.0092,
+      "mae": 386.59,
+      "rmse": 632.11,
+      "r2": -0.0374,
       "folds": 5
     },
     "ridge": {
-      "mae": 332.33,
-      "rmse": 430.68,
-      "r2": -0.0528,
+      "mae": 315.53,
+      "rmse": 561.98,
+      "r2": 0.1084,
       "folds": 5
     },
     "random_forest": {
-      "mae": 323.59,
-      "rmse": 405.94,
-      "r2": -0.0452,
+      "mae": 296.96,
+      "rmse": 539.87,
+      "r2": 0.1437,
       "folds": 5
     }
   },
-  "beats_baseline": false,
-  "improvement_over_baseline_pct": -5.48,
+  "beats_baseline": true,
+  "improvement_over_baseline_pct": 23.18,
   "selection_rule": "A challenger must lower MAE by >=5% to be selected over the median.",
   "limitations": {
     "dataset_size_limited": true,
     "feature_variance_limited": true,
     "predictors_largely_imputed": true,
-    "ml_outperforms_baseline": false,
+    "ml_outperforms_baseline": true,
     "note": "130 rows, 22 distinct feature vectors, 108 of them identical. All 22 predictor columns are imputed or derived for every row, including the 4 marked REAL. This estimate is EXPERIMENTAL and must not be presented as a reliable forecast. The rule engine is the primary decision-support signal."
   }
 }

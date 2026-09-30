@@ -1,15 +1,15 @@
 {
-  "source_file": "combined5_land_acquisition.csv",
-  "rows": 130,
-  "columns_total": 59,
+  "source_file": "mapped_user_data.csv",
+  "rows": 422,
+  "columns_total": 22,
   "target": "delay_days_target",
   "target_stats": {
-    "non_null": 130,
-    "min": 12.0,
-    "max": 2069.75,
-    "mean": 540.55,
-    "median": 596.0,
-    "std": 424.34
+    "non_null": 422,
+    "min": 86.0,
+    "max": 6574.0,
+    "mean": 985.28,
+    "median": 861.0,
+    "std": 650.62
   },
   "excluded": {
     "leakage": [
@@ -59,258 +59,98 @@
     "passed": true
   },
   "features": {
-    "candidates": 27,
+    "candidates": 21,
     "usable": [
-      "land_area_ha",
-      "actual_land_rate_rs_sqm",
-      "expected_land_rate_rs_sqm",
-      "land_rate_difference_rs_sqm",
-      "land_parcels_count",
-      "affected_landowners_count",
-      "compensation_pending_rs",
+      "acquisition_percentage",
+      "affected_landowners",
       "court_cases_count",
-      "award_delay_days",
-      "fund_deposit_delay_days",
-      "R&R_pending_count",
+      "litigation_flag",
+      "possession_pending",
+      "land_required_ha",
+      "land_acquired_ha",
       "compensation_pending",
-      "court_case",
-      "enhanced_compensation_claim",
-      "possession_obtained",
-      "government_coordination_delay",
-      "R&R_required"
+      "compensation_pending_percentage",
+      "affected_families",
+      "land_dispute_flag",
+      "r_and_r_required",
+      "r_and_r_pending",
+      "forest_clearance_pending"
     ],
-    "usable_count": 17,
+    "usable_count": 14,
     "zero_variance": [
-      "land_acquisition_percentage",
-      "possession_delay_days",
-      "landowner_objection",
-      "landowner_agitation",
-      "RoW_issue",
       "encroachment",
-      "land_record_issue",
-      "forest_clearance"
+      "title_issue_flag",
+      "land_record_issue_flag",
+      "row_issue",
+      "administrative_delay"
     ],
-    "zero_variance_count": 8,
+    "zero_variance_count": 5,
     "detail": [
       {
-        "column": "land_area_ha",
+        "column": "acquisition_percentage",
         "dtype": "float64",
         "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 5,
-        "variance": 499.660176,
+        "missing": 67,
+        "missing_pct": 15.88,
+        "distinct_values": 321,
+        "variance": 728.064171,
         "zero_variance": false,
-        "corr_with_target": 0.0657
+        "corr_with_target": -0.1015
       },
       {
-        "column": "actual_land_rate_rs_sqm",
+        "column": "notification_delay_days",
         "dtype": "float64",
         "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 5,
-        "variance": 1665.090012,
-        "zero_variance": false,
-        "corr_with_target": 0.0678
-      },
-      {
-        "column": "expected_land_rate_rs_sqm",
-        "dtype": "float64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 5,
-        "variance": 1643.670528,
-        "zero_variance": false,
-        "corr_with_target": 0.0951
-      },
-      {
-        "column": "land_rate_difference_rs_sqm",
-        "dtype": "float64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 5,
-        "variance": 2630.867564,
-        "zero_variance": false,
-        "corr_with_target": -0.0212
-      },
-      {
-        "column": "land_acquisition_percentage",
-        "dtype": "float64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 1,
-        "variance": 0.0,
-        "zero_variance": true,
-        "corr_with_target": null
-      },
-      {
-        "column": "land_parcels_count",
-        "dtype": "int64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
+        "missing": 398,
+        "missing_pct": 94.31,
         "distinct_values": 4,
-        "variance": 222.403314,
+        "variance": 816.743056,
         "zero_variance": false,
-        "corr_with_target": 0.0659
-      },
-      {
-        "column": "affected_landowners_count",
-        "dtype": "int64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 5,
-        "variance": 743.073669,
-        "zero_variance": false,
-        "corr_with_target": 0.2533
-      },
-      {
-        "column": "compensation_pending_rs",
-        "dtype": "float64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 16,
-        "variance": 2.278369493224747e+16,
-        "zero_variance": false,
-        "corr_with_target": 0.1905
-      },
-      {
-        "column": "court_cases_count",
-        "dtype": "float64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 2,
-        "variance": 0.09,
-        "zero_variance": false,
-        "corr_with_target": -0.0338
+        "corr_with_target": 1.0
       },
       {
         "column": "award_delay_days",
         "dtype": "float64",
         "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 2,
-        "variance": 63.641395,
+        "missing": 399,
+        "missing_pct": 94.55,
+        "distinct_values": 16,
+        "variance": 12998.287335,
         "zero_variance": false,
-        "corr_with_target": -0.0932
+        "corr_with_target": 1.0
       },
       {
-        "column": "fund_deposit_delay_days",
+        "column": "affected_landowners",
         "dtype": "float64",
         "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 2,
-        "variance": 63.641395,
+        "missing": 48,
+        "missing_pct": 11.37,
+        "distinct_values": 343,
+        "variance": 295182.433155,
         "zero_variance": false,
-        "corr_with_target": -0.0932
+        "corr_with_target": 0.0336
       },
       {
-        "column": "possession_delay_days",
-        "dtype": "float64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 1,
-        "variance": 0.0,
-        "zero_variance": true,
-        "corr_with_target": null
-      },
-      {
-        "column": "R&R_pending_count",
-        "dtype": "float64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 2,
-        "variance": 1221.301775,
-        "zero_variance": false,
-        "corr_with_target": 0.2668
-      },
-      {
-        "column": "landowner_objection",
+        "column": "court_cases_count",
         "dtype": "int64",
         "is_numeric": true,
         "missing": 0,
         "missing_pct": 0.0,
-        "distinct_values": 1,
-        "variance": 0.0,
-        "zero_variance": true,
-        "corr_with_target": null
+        "distinct_values": 6,
+        "variance": 1.453426,
+        "zero_variance": false,
+        "corr_with_target": 0.2282
       },
       {
-        "column": "landowner_agitation",
-        "dtype": "int64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 1,
-        "variance": 0.0,
-        "zero_variance": true,
-        "corr_with_target": null
-      },
-      {
-        "column": "compensation_pending",
+        "column": "litigation_flag",
         "dtype": "int64",
         "is_numeric": true,
         "missing": 0,
         "missing_pct": 0.0,
         "distinct_values": 2,
-        "variance": 0.102071,
+        "variance": 0.217566,
         "zero_variance": false,
-        "corr_with_target": 0.0934
-      },
-      {
-        "column": "court_case",
-        "dtype": "int64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 2,
-        "variance": 0.09,
-        "zero_variance": false,
-        "corr_with_target": -0.0338
-      },
-      {
-        "column": "enhanced_compensation_claim",
-        "dtype": "int64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 2,
-        "variance": 0.09,
-        "zero_variance": false,
-        "corr_with_target": -0.0338
-      },
-      {
-        "column": "possession_obtained",
-        "dtype": "int64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 2,
-        "variance": 0.036982,
-        "zero_variance": false,
-        "corr_with_target": 0.1471
-      },
-      {
-        "column": "RoW_issue",
-        "dtype": "int64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 1,
-        "variance": 0.0,
-        "zero_variance": true,
-        "corr_with_target": null
+        "corr_with_target": 0.0593
       },
       {
         "column": "encroachment",
@@ -324,7 +164,84 @@
         "corr_with_target": null
       },
       {
-        "column": "land_record_issue",
+        "column": "possession_pending",
+        "dtype": "int64",
+        "is_numeric": true,
+        "missing": 0,
+        "missing_pct": 0.0,
+        "distinct_values": 2,
+        "variance": 0.243885,
+        "zero_variance": false,
+        "corr_with_target": 0.1904
+      },
+      {
+        "column": "land_required_ha",
+        "dtype": "float64",
+        "is_numeric": true,
+        "missing": 20,
+        "missing_pct": 4.74,
+        "distinct_values": 402,
+        "variance": 11206043.668984,
+        "zero_variance": false,
+        "corr_with_target": 0.4132
+      },
+      {
+        "column": "land_acquired_ha",
+        "dtype": "float64",
+        "is_numeric": true,
+        "missing": 67,
+        "missing_pct": 15.88,
+        "distinct_values": 344,
+        "variance": 10621222.421324,
+        "zero_variance": false,
+        "corr_with_target": 0.3628
+      },
+      {
+        "column": "compensation_pending",
+        "dtype": "float64",
+        "is_numeric": true,
+        "missing": 72,
+        "missing_pct": 17.06,
+        "distinct_values": 312,
+        "variance": 1.3184891620729319e+20,
+        "zero_variance": false,
+        "corr_with_target": 0.1663
+      },
+      {
+        "column": "compensation_pending_percentage",
+        "dtype": "float64",
+        "is_numeric": true,
+        "missing": 72,
+        "missing_pct": 17.06,
+        "distinct_values": 272,
+        "variance": 1066.72442,
+        "zero_variance": false,
+        "corr_with_target": 0.2243
+      },
+      {
+        "column": "affected_families",
+        "dtype": "float64",
+        "is_numeric": true,
+        "missing": 72,
+        "missing_pct": 17.06,
+        "distinct_values": 282,
+        "variance": 54724.952653,
+        "zero_variance": false,
+        "corr_with_target": -0.074
+      },
+      {
+        "column": "land_dispute_flag",
+        "dtype": "int64",
+        "is_numeric": true,
+        "missing": 0,
+        "missing_pct": 0.0,
+        "distinct_values": 2,
+        "variance": 0.023135,
+        "zero_variance": false,
+        "corr_with_target": -0.1547
+      },
+      {
+        "column": "title_issue_flag",
         "dtype": "int64",
         "is_numeric": true,
         "missing": 0,
@@ -335,18 +252,7 @@
         "corr_with_target": null
       },
       {
-        "column": "government_coordination_delay",
-        "dtype": "int64",
-        "is_numeric": true,
-        "missing": 0,
-        "missing_pct": 0.0,
-        "distinct_values": 2,
-        "variance": 0.064438,
-        "zero_variance": false,
-        "corr_with_target": 0.1462
-      },
-      {
-        "column": "forest_clearance",
+        "column": "land_record_issue_flag",
         "dtype": "int64",
         "is_numeric": true,
         "missing": 0,
@@ -357,66 +263,77 @@
         "corr_with_target": null
       },
       {
-        "column": "R&R_required",
+        "column": "r_and_r_required",
         "dtype": "int64",
         "is_numeric": true,
         "missing": 0,
         "missing_pct": 0.0,
         "distinct_values": 2,
-        "variance": 0.007633,
+        "variance": 0.23239,
         "zero_variance": false,
-        "corr_with_target": 0.2668
+        "corr_with_target": 0.142
       },
       {
-        "column": "land_acquisition_status",
-        "dtype": "object",
-        "is_numeric": false,
+        "column": "r_and_r_pending",
+        "dtype": "int64",
+        "is_numeric": true,
         "missing": 0,
         "missing_pct": 0.0,
-        "distinct_values": 6,
+        "distinct_values": 2,
+        "variance": 0.23239,
         "zero_variance": false,
+        "corr_with_target": 0.142
+      },
+      {
+        "column": "row_issue",
+        "dtype": "int64",
+        "is_numeric": true,
+        "missing": 0,
+        "missing_pct": 0.0,
+        "distinct_values": 1,
+        "variance": 0.0,
+        "zero_variance": true,
         "corr_with_target": null
       },
       {
-        "column": "project_type",
-        "dtype": "object",
-        "is_numeric": false,
+        "column": "forest_clearance_pending",
+        "dtype": "int64",
+        "is_numeric": true,
         "missing": 0,
         "missing_pct": 0.0,
-        "distinct_values": 11,
+        "distinct_values": 2,
+        "variance": 0.245906,
         "zero_variance": false,
+        "corr_with_target": 0.0618
+      },
+      {
+        "column": "administrative_delay",
+        "dtype": "int64",
+        "is_numeric": true,
+        "missing": 0,
+        "missing_pct": 0.0,
+        "distinct_values": 1,
+        "variance": 0.0,
+        "zero_variance": true,
         "corr_with_target": null
       }
     ]
   },
   "distinct_feature_vectors": {
-    "count": 22,
-    "largest_group_rows": 108,
-    "largest_group_pct": 83.1,
-    "singleton_groups": 20,
+    "count": 403,
+    "largest_group_rows": 20,
+    "largest_group_pct": 4.7,
+    "singleton_groups": 402,
     "target_spread_in_largest_group": {
-      "n": 108,
-      "min": 12.0,
-      "max": 2069.75,
-      "median": 602.0
+      "n": 20,
+      "min": 396.0,
+      "max": 3013.0,
+      "median": 1309.0
     }
   },
   "provenance": {
-    "record_status": {
-      "REAL + IMPUTED PREDICTORS": 105,
-      "REAL + IMPUTED": 15,
-      "REAL + IMPUTED PREDICTORS + PROXY TARGET": 6,
-      "REAL": 4
-    },
-    "imputed_flag_totals": {
-      "delay_target_imputed": 11,
-      "land_area_imputed": 126,
-      "actual_rate_imputed": 126,
-      "expected_rate_imputed": 126,
-      "delay_cost_imputed": 1
-    },
-    "factor_imputed_count_unique": [
-      24
-    ]
+    "record_status": {},
+    "imputed_flag_totals": {},
+    "factor_imputed_count_unique": []
   }
 }

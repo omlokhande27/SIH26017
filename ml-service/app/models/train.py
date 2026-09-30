@@ -43,7 +43,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 ROOT = Path(__file__).resolve().parents[2]
-DATA = ROOT / "data" / "combined5_land_acquisition.csv"
+DATA = ROOT / "data" / "mapped_user_data.csv"
 AUDIT = ROOT / "artifacts" / "dataset_audit.json"
 ARTIFACTS = ROOT / "artifacts"
 MODEL_PATH = ARTIFACTS / "model.joblib"
@@ -56,23 +56,14 @@ RANDOM_STATE = 42
 # A feature the service cannot be given is useless no matter how predictive it
 # looks offline, so the training set is restricted to this intersection.
 SERVABLE_FEATURES = [
-    "land_acquisition_percentage",
-    "compensation_pending_rs",
-    "court_cases_count",
-    "affected_landowners_count",
-    "R&R_pending_count",
-    "award_delay_days",
-    "possession_delay_days",
-    "land_parcels_count",
-    "compensation_pending",
-    "court_case",
-    "possession_obtained",
-    "RoW_issue",
-    "encroachment",
-    "land_record_issue",
-    "government_coordination_delay",
-    "forest_clearance",
-    "R&R_required",
+    'land_required_ha', 'land_acquired_ha', 'acquisition_percentage',
+    'compensation_pending', 'compensation_pending_percentage',
+    'affected_landowners', 'affected_families', 'court_cases_count',
+    'litigation_flag', 'land_dispute_flag', 'title_issue_flag',
+    'land_record_issue_flag', 'r_and_r_required', 'r_and_r_pending',
+    'row_issue', 'encroachment', 'forest_clearance_pending',
+    'possession_pending', 'administrative_delay', 'notification_delay_days',
+    'award_delay_days'
 ]
 
 
