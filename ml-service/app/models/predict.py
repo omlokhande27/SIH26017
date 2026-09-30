@@ -40,23 +40,27 @@ from app.schemas.prediction import FeatureSnapshot, MLEstimate
 # fabricated observation.
 def _snapshot_to_model_row(s: FeatureSnapshot, features: list[str]) -> pd.DataFrame:
     mapping: dict[str, float | None] = {
-        "compensation_pending_rs": s.compensation_pending,
-        "court_cases_count": float(s.court_cases_count),
-        "affected_landowners_count": (
-            float(s.affected_landowners) if s.affected_landowners is not None else None
-        ),
-        "R&R_pending_count": 1.0 if s.r_and_r_pending else 0.0,
+        "land_required_ha": s.land_required_ha,
+        "land_acquired_ha": s.land_acquired_ha,
+        "acquisition_percentage": s.acquisition_percentage,
+        "compensation_pending": s.compensation_pending,
+        "compensation_pending_percentage": s.compensation_pending_percentage,
+        "affected_landowners": float(s.affected_landowners) if s.affected_landowners is not None else None,
+        "affected_families": float(s.affected_families) if s.affected_families is not None else None,
+        "court_cases_count": float(s.court_cases_count) if s.court_cases_count is not None else None,
+        "litigation_flag": 1.0 if s.litigation_flag else 0.0,
+        "land_dispute_flag": 1.0 if s.land_dispute_flag else 0.0,
+        "title_issue_flag": 1.0 if s.title_issue_flag else 0.0,
+        "land_record_issue_flag": 1.0 if s.land_record_issue_flag else 0.0,
+        "r_and_r_required": 1.0 if s.r_and_r_required else 0.0,
+        "r_and_r_pending": 1.0 if s.r_and_r_pending else 0.0,
+        "row_issue": 1.0 if s.row_issue else 0.0,
+        "encroachment": 1.0 if s.encroachment else 0.0,
+        "forest_clearance_pending": 1.0 if s.forest_clearance_pending else 0.0,
+        "possession_pending": 1.0 if s.possession_pending else 0.0,
+        "administrative_delay": 1.0 if s.administrative_delay else 0.0,
+        "notification_delay_days": s.notification_delay_days,
         "award_delay_days": s.award_delay_days,
-        "land_parcels_count": None,          # not carried on the snapshot
-        "compensation_pending": (
-            1.0 if (s.compensation_pending or 0) > 0 else 0.0
-        ),
-        "court_case": 1.0 if s.litigation_flag else 0.0,
-        "possession_obtained": 0.0 if s.possession_pending else 1.0,
-        "government_coordination_delay": 1.0 if s.administrative_delay else 0.0,
-        "R&R_required": 1.0 if s.r_and_r_required else 0.0,
-        "land_acquisition_percentage": s.acquisition_percentage,
-        "possession_delay_days": None,       # not carried on the snapshot
     }
     row = {f: mapping.get(f, np.nan) for f in features}
     return pd.DataFrame([row], columns=features).apply(pd.to_numeric, errors="coerce")

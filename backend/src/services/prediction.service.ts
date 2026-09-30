@@ -188,17 +188,11 @@ async function resolveSnapshot(
   requestedSnapshotId?: string,
 ): Promise<{ snapshot: SnapshotRow; created: boolean }> {
   if (requestedSnapshotId) {
-    // getSnapshot is scoped by (project_id, id), so a snapshot belonging to a
-    // different project surfaces as 404 rather than being silently used.
     const snapshot = await getSnapshot(projectId, requestedSnapshotId);
     return { snapshot, created: false };
   }
 
-  const existing = await listSnapshots(projectId);
-  if (existing.length > 0) {
-    return { snapshot: existing[0] as SnapshotRow, created: false };
-  }
-
+  // Always generate a fresh snapshot of the project's current operational state
   const result = await createSnapshot(projectId, new Date());
   return { snapshot: result.snapshot, created: true };
 }
