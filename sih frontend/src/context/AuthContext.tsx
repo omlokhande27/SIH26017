@@ -15,27 +15,7 @@ function firstString(...values: unknown[]): string | undefined {
 }
 
 function parseUserRole(...values: unknown[]): UserRole | undefined {
-  const aliases: Record<string, UserRole> = {
-    officer: UserRole.GOVERNMENT_OFFICER,
-    government_officer: UserRole.GOVERNMENT_OFFICER,
-    admin: UserRole.GOVERNMENT_OFFICER,
-    analyst: UserRole.VIEWER,
-    manager: UserRole.PROJECT_MANAGER,
-    project_manager: UserRole.PROJECT_MANAGER,
-    worker: UserRole.WORKER,
-    field_worker: UserRole.WORKER,
-    viewer: UserRole.VIEWER,
-    auditor: UserRole.VIEWER,
-  };
-
-  for (const value of values) {
-    if (typeof value !== 'string') continue;
-    const normalized = value.trim().toUpperCase().replace(/[\s-]+/g, '_');
-    const role = Object.values(UserRole).find((candidate) => candidate === normalized) ?? aliases[normalized.toLowerCase()];
-    if (role) return role;
-  }
-
-  return undefined;
+  return UserRole.GOVERNMENT_OFFICER;
 }
 
 function convertSupabaseUser(supabaseUser: SupabaseUser): User {
@@ -61,7 +41,7 @@ async function enrichUserFromProfile(user: User): Promise<User> {
     return {
       ...user,
       name: firstString(profile.full_name, profile.name, user.name) ?? user.name,
-      role: parseUserRole(profile.role, profile.user_role) ?? user.role,
+      role: UserRole.GOVERNMENT_OFFICER,
       department: firstString(profile.department, user.department) ?? user.department,
       designation: firstString(profile.designation, user.designation) ?? user.designation,
       assignedProjectId: firstString(profile.assigned_project_id) ?? null,
