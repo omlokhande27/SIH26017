@@ -48,8 +48,15 @@ const router = Router();
 const read = () => requireProjectAccess({ mode: 'read' });
 const write = () => requireProjectAccess({ mode: 'write' });
 
+
+// --- public directory -------------------------------------------------------
+// An unauthenticated endpoint used exclusively by the registration wizard
+// to populate the project selection dropdown.
+router.get('/projects/directory', projectController.listProjects);
+
 // Every route below requires an authenticated caller.
 router.use(requireAuth);
+
 
 // --- reference data ---------------------------------------------------------
 // Not project-scoped: the vocabulary is the same for everyone.

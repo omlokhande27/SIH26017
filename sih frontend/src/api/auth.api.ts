@@ -11,10 +11,10 @@ export const authApi = {
       id: user.id,
       name: meta.full_name ?? meta.name ?? user.email?.split('@')[0] ?? 'User',
       email: user.email ?? '',
-      // DEMO OVERRIDE: Force everyone to be GOVERNMENT_OFFICER so the prototype is fully unlocked
-      role: UserRole.GOVERNMENT_OFFICER,
+      // DEMO OVERRIDE: Force everyone to be ADMIN so the prototype is fully unlocked
+      role: UserRole.ADMIN,
       department: meta.department ?? 'Land Acquisition Department',
-      designation: meta.designation ?? meta.profession ?? 'Officer',
+      designation: meta.designation ?? meta.profession ?? 'Admin Officer',
     };
   },
 
@@ -27,10 +27,10 @@ export const authApi = {
         id: data.user.id,
         name: meta.full_name ?? meta.name ?? email.split('@')[0],
         email: data.user.email ?? email,
-        // DEMO OVERRIDE: Force everyone to be GOVERNMENT_OFFICER
-        role: UserRole.GOVERNMENT_OFFICER,
+        // DEMO OVERRIDE: Force everyone to be ADMIN
+        role: UserRole.ADMIN,
         department: meta.department ?? 'Land Acquisition Department',
-        designation: meta.designation ?? meta.profession ?? 'Officer',
+        designation: meta.designation ?? meta.profession ?? 'Admin Officer',
       } : null,
     };
   },
