@@ -11,8 +11,8 @@ export const authApi = {
       id: user.id,
       name: meta.full_name ?? meta.name ?? user.email?.split('@')[0] ?? 'User',
       email: user.email ?? '',
-      // DEMO OVERRIDE: Force everyone to be ADMIN so the prototype is fully unlocked
-      role: UserRole.ADMIN,
+      // DEMO OVERRIDE: Force everyone to be OFFICER so the prototype UI is fully unlocked
+      role: UserRole.GOVERNMENT_OFFICER,
       department: meta.department ?? 'Land Acquisition Department',
       designation: meta.designation ?? meta.profession ?? 'Admin Officer',
     };
@@ -27,8 +27,8 @@ export const authApi = {
         id: data.user.id,
         name: meta.full_name ?? meta.name ?? email.split('@')[0],
         email: data.user.email ?? email,
-        // DEMO OVERRIDE: Force everyone to be ADMIN
-        role: UserRole.ADMIN,
+        // DEMO OVERRIDE: Force everyone to be OFFICER
+        role: UserRole.GOVERNMENT_OFFICER,
         department: meta.department ?? 'Land Acquisition Department',
         designation: meta.designation ?? meta.profession ?? 'Admin Officer',
       } : null,

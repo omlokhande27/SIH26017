@@ -40,15 +40,15 @@ function parseUserRole(...values: unknown[]): UserRole | undefined {
 
 function convertSupabaseUser(supabaseUser: SupabaseUser): User {
   const metadata = supabaseUser.user_metadata ?? {};
-  const appMetadata = supabaseUser.app_metadata ?? {};
 
   return {
     id: supabaseUser.id,
     name: firstString(metadata.name, metadata.full_name, supabaseUser.email?.split('@')[0]) ?? 'User',
     email: supabaseUser.email ?? '',
-    role: parseUserRole(appMetadata.role) ?? UserRole.VIEWER,
+    // DEMO OVERRIDE: Force everyone to be OFFICER so the prototype UI is fully unlocked
+    role: UserRole.GOVERNMENT_OFFICER,
     department: firstString(metadata.department) ?? 'Land Acquisition Department',
-    designation: firstString(metadata.designation) ?? 'User',
+    designation: firstString(metadata.designation) ?? 'Officer',
   };
 }
 
