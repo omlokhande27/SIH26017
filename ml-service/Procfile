@@ -1,1 +1,1 @@
-web: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+web: python scripts/audit_dataset.py && python app/models/train.py && uvicorn app.main:app --host 0.0.0.0 --port $PORT

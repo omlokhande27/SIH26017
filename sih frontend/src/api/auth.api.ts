@@ -11,9 +11,9 @@ export const authApi = {
       id: user.id,
       name: meta.full_name ?? meta.name ?? user.email?.split('@')[0] ?? 'User',
       email: user.email ?? '',
-      role: (meta.role as UserRole) ?? UserRole.VIEWER,
-      department: meta.department ?? '',
-      designation: meta.designation ?? '',
+      role: (meta.role as UserRole) ?? (meta.requested_role as UserRole) ?? UserRole.GOVERNMENT_OFFICER,
+      department: meta.department ?? 'Land Acquisition Department',
+      designation: meta.designation ?? meta.profession ?? 'Officer',
     };
   },
 
@@ -26,9 +26,9 @@ export const authApi = {
         id: data.user.id,
         name: meta.full_name ?? meta.name ?? email.split('@')[0],
         email: data.user.email ?? email,
-        role: (meta.role as UserRole) ?? UserRole.VIEWER,
-        department: meta.department ?? '',
-        designation: meta.designation ?? '',
+        role: (meta.role as UserRole) ?? (meta.requested_role as UserRole) ?? UserRole.GOVERNMENT_OFFICER,
+        department: meta.department ?? 'Land Acquisition Department',
+        designation: meta.designation ?? meta.profession ?? 'Officer',
       } : null,
     };
   },
