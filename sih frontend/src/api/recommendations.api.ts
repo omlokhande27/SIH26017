@@ -39,7 +39,7 @@ export const recommendationsApi = {
       // Fetch predictions in parallel (limited to avoid overwhelming the backend)
       const fetchPromises = projects.slice(0, 20).map(async (p: any) => {
         try {
-          const predRes: any = await apiClient.get(`/projects/${p.id}/predictions/latest`);
+          const predRes: any = await apiClient.get(`/projects/${p.id}/assessment`);
           const recs = predRes?.data?.recommendations ?? predRes?.recommendations ?? [];
           if (Array.isArray(recs)) {
             return recs.map((rec: any, idx: number) =>
@@ -72,7 +72,7 @@ export const recommendationsApi = {
 
   getRecommendationsByProjectId: async (projectId: string): Promise<Recommendation[]> => {
     try {
-      const predRes: any = await apiClient.get(`/projects/${projectId}/predictions/latest`);
+      const predRes: any = await apiClient.get(`/projects/${projectId}/assessment`);
       const recs = predRes?.data?.recommendations ?? predRes?.recommendations ?? [];
       const projectName = predRes?.data?.prediction?.project_name ?? 'Project';
       if (Array.isArray(recs)) {
